@@ -21,7 +21,15 @@ namespace USB{
     // should be called from update()
     void parse(){
         if(incoming.substring(0, 4).equals("STAR")){
-            Settings::setTarget("implementme!", "implementme!", "implementme!");
+            String x = incoming.substring(4,5);
+            Serial.println(x);
+            String y = incoming.substring(5,6);
+            Serial.println(y);
+            String z = incoming.substring(6,7);
+            Serial.println(z);
+            Settings::setTarget(x, y, z);
+        }else if(incoming.substring(0, 4).equals("GTAR")){
+            Settings::loadSettings();
         }else if(incoming.substring(0, 4).equals("SRVO")){
             Serial.println(incoming.substring(4));
             Serial.println(incoming.substring(4).toInt());

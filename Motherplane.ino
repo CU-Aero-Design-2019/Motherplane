@@ -1,7 +1,6 @@
 // Main file for SAE aero design 2019 motherplane
 // General rules:
 //     Never use delay()s.
-//     Tabs or 4 spaces (go into arduino settings and check "use external editor" then use a real text editor)
 
 #define DEBUG
 
@@ -12,6 +11,9 @@
 #include <SpecGPS.h>
 #include <SpecMPU6050.h>
 #include <SpecRFD900.h>
+#include <SpecBMP180.h>
+
+SpecBMP180 bmp;
 
 void setup(){
     // GPS setup
@@ -23,10 +25,16 @@ void setup(){
     // IMU setup
     SpecMPU6050::setup();
 
+    delay(2000);
+
     // load settings from EEPROM
     Settings::loadSettings();
 
     SpecRFD900::setup(&Serial3);
+
+    if (!bmp.begin()) {
+        Serial.println("Could not find a valid BMP085 sensor, check wiring!");
+    }
 }
 
 void loop(){
@@ -38,9 +46,13 @@ void loop(){
         SpecMPU6050::UpdateTimer = millis();
     }
 
-    SpecRFD900::update();
+    if(millis() - bmp.UpdateTimer > 1000/bmp.UpdatePeriod){
+        //Serial.println(bmp.readAltitude());
+        bmp.UpdateTimer = millis();
+    }
 
-    SpecRFD900::send(String(millis()));
-    delay(100);
+    //SpecRFD900::update();
+
+    //SpecRFD900::send(String(millis()));
 
 }

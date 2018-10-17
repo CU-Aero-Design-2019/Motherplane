@@ -5,7 +5,7 @@
 
 namespace Settings
 {
-const int StartAddress = 32;
+const int StartAddress = 3200;
 const int varSize = 20;
 
 String targetLongitude;
@@ -15,12 +15,14 @@ String targetAltitude;
 // define a struct for storing the settings in EEPROM and instantiate one
 struct SettingsStruct
 {
+    long saveTime;
     char targetLongitude[varSize];
     char targetLatitude[varSize];
     char targetAltitude[varSize];
 };
 
 SettingsStruct settings{
+    millis(),
     "defaultLongitude",
     "defaultLatitude",
     "defaultAltitude"
@@ -28,25 +30,31 @@ SettingsStruct settings{
 
 void saveSettings()
 {
+    settings.saveTime = millis();
     targetLongitude.toCharArray(settings.targetLongitude, 20);
     targetLatitude.toCharArray(settings.targetLatitude, 20);
     targetAltitude.toCharArray(settings.targetAltitude, 20);
     for (int addressOffset = 0; addressOffset < sizeof(settings); addressOffset++)
     {
+        #ifdef DEBUG
+        //Serial.println("Writing EEPROM");
+        #endif
         EEPROM.write(StartAddress + addressOffset, *((char *)&settings + addressOffset));
     }
 }
 
 void loadSettings()
 {
-    for (int addressOffset = 0; addressOffset < sizeof(settings); addressOffset++)
+    SettingsStruct loaded;
+    for (int addressOffset = 0; addressOffset < sizeof(loaded); addressOffset++)
     {
-        *((char *)&settings + addressOffset) = EEPROM.read(StartAddress + addressOffset);
+        *((char *)&loaded + addressOffset) = EEPROM.read(StartAddress + addressOffset);
     }
 #ifdef DEBUG
-    Serial.println(targetLongitude);
-    Serial.println(targetLatitude);
-    Serial.println(targetAltitude);
+    Serial.println(loaded.saveTime);
+    Serial.println(loaded.targetLongitude);
+    Serial.println(loaded.targetLatitude);
+    Serial.println(loaded.targetAltitude);
 #endif
 }
 
