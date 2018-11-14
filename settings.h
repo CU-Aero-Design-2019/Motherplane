@@ -21,25 +21,19 @@ struct SettingsStruct
     char targetAltitude[varSize];
 };
 
-SettingsStruct settings{
-    millis(),
-    "defaultLongitude",
-    "defaultLatitude",
-    "defaultAltitude"
-};
-
 void saveSettings()
 {
-    settings.saveTime = millis();
-    targetLongitude.toCharArray(settings.targetLongitude, 20);
-    targetLatitude.toCharArray(settings.targetLatitude, 20);
-    targetAltitude.toCharArray(settings.targetAltitude, 20);
-    for (int addressOffset = 0; addressOffset < sizeof(settings); addressOffset++)
+    SettingsStruct sendingSettings;
+    sendingSettings.saveTime = millis();
+    targetLongitude.toCharArray(sendingSettings.targetLongitude, 20);
+    targetLatitude.toCharArray(sendingSettings.targetLatitude, 20);
+    targetAltitude.toCharArray(sendingSettings.targetAltitude, 20);
+    for (int addressOffset = 0; addressOffset < sizeof(sendingSettings); addressOffset++)
     {
         #ifdef DEBUG
         //Serial.println("Writing EEPROM");
         #endif
-        EEPROM.write(StartAddress + addressOffset, *((char *)&settings + addressOffset));
+        EEPROM.write(StartAddress + addressOffset, *((char *)&sendingSettings + addressOffset));
     }
 }
 
