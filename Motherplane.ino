@@ -16,6 +16,9 @@
 
 SpecBMP180 bmp;
 
+// Make a string to send to SD and RFD900
+String telemetry = "";
+
 void setup(){
     // GPS setup
     SpecGPS::setup();
@@ -36,7 +39,7 @@ void setup(){
     SpecSD::setup();
 
     if (!bmp.begin()) {
-        Serial.println("Could not find a valid BMP085 sensor, check wiring!");
+        Serial.println("Could not find a valid BMP085 sensor");
     }
 }
 
@@ -52,45 +55,39 @@ void loop(){
         SpecMPU6050::UpdateTimer = millis();
     }
 
-    if(millis() - bmp.UpdateTimer > 1000/bmp.UpdatePeriod){
-        //Serial.println(bmp.readAltitude());
-        bmp.UpdateTimer = millis();
-    }
-
-    // Make a string to send to SD and RFD900
-    String telemetry = "";
-
-    // add current time
-    telemetry += SpecGPS::gps.time.value();
-    telemetry += " ";
-
-    // speed
-    telemetry += SpecGPS::gps.speed.value();
-    telemetry += " ";
-
-    // location
-    telemetry += SpecGPS::gps.location.lat();
-    telemetry += " ";
-    telemetry += SpecGPS::gps.location.lng();
-    telemetry += " ";
-
-    // add altitude
-    telemetry += bmp.readAltitude();
-    telemetry += " ";
-    
-    // add angleX
-    telemetry += SpecMPU6050::angleX;
-    telemetry += " ";
-
-    telemetry += SpecMPU6050::temp;
-    telemetry += " ";
-
-    telemetry += "\n";
-
     if(millis() - SpecRFD900::UpdateTimer > 1000/SpecRFD900::UpdatePeriod){
+        telemetry = "";
+
+        // add current time
+        telemetry += SpecGPS::gps.time.value();
+        telemetry += " ";
+
+        // speed
+        telemetry += SpecGPS::gps.speed.value();
+        telemetry += " ";
+
+        // location
+        telemetry += SpecGPS::gps.location.lat();
+        telemetry += " ";
+        telemetry += SpecGPS::gps.location.lng();
+        telemetry += " ";
+
+        // add altitude
+        telemetry += bmp.readOffsetAltitude();
+        telemetry += " ";
+        
+        // add angleX
+        telemetry += SpecMPU6050::angleX;
+        telemetry += " ";
+
+        telemetry += millis()/1000;
+        telemetry += " ";
+
+        telemetry += "!";
         SpecRFD900::sendTelemetry(telemetry);
+        Serial.println(telemetry);
+        //Serial.println("sending telemetry");
         SpecRFD900::UpdateTimer = millis();
-        SpecGPS::displayInfo();
     }
 
     if(millis() - SpecSD::UpdateTimer > 1000/SpecSD::UpdatePeriod){
