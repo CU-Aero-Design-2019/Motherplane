@@ -1,6 +1,4 @@
 // Main file for SAE aero design 2019 motherplane
-// General rules:
-//     Never use delay()s.
 
 #define DEBUG
 
@@ -16,9 +14,6 @@
 #include <SpecHMC5883.h>
 
 SpecBMP180 bmp;
-
-// Make a string to send to SD and RFD900
-String telemetry = "";
 
 void setup(){
     // load settings from EEPROM
@@ -39,7 +34,7 @@ void setup(){
     
     SpecRFD900::setup(&Serial3);
 
-    SpecSD::setup("test002.txt");
+    SpecSD::setup("test003.txt");
 
     if (!bmp.begin()) {
         Serial.println("Could not find a valid BMP085 sensor");
@@ -66,78 +61,70 @@ void loop(){
         //Serial.println(SpecHMC5883::x);
     }
 
-    if(millis() - SpecRFD900::UpdateTimer > 1000/SpecRFD900::UpdatePeriod){
-        telemetry = "";
+    if(millis() - SpecRFD900::UpdateTimer > 1000 / SpecRFD900::UpdatePeriod){
+        //telemetry = "";
 
-        // // add current time
-        // telemetry += SpecGPS::gps.time.value();
-        // telemetry += " ";
+        //telemetry += SpecGPS::gps.location.lat(); // deg
+        Serial.println(SpecGPS::gps.location.lat());
+        //telemetry += " ";
+        Serial.println(SpecGPS::gps.location.lng()); // deg
+        //telemetry += " ";
+        Serial.println(SpecGPS::gps.speed.mps()); // m/s
+        //telemetry += " ";
+        Serial.println(SpecGPS::gps.altitude.value()); // cm
+        //telemetry += " ";
+        Serial.println(bmp.readOffsetAltitude()); // m
+        //telemetry += " ";
+        Serial.println(SpecMPU6050::angleAccX); // deg
+        //telemetry += " ";
+        Serial.println(SpecMPU6050::angleAccY);
+        //telemetry += " ";
+        Serial.println(SpecMPU6050::angleAccZ);
+        //telemetry += " ";
+        Serial.println(SpecMPU6050::angleGyroX); // deg/s
+        //telemetry += " ";
+        Serial.println(SpecMPU6050::angleGyroY);
+        //telemetry += " ";
+        Serial.println(SpecMPU6050::angleGyroZ);
+        //telemetry += " ";
+        Serial.println(SpecHMC5883::x); // ?
+        //telemetry += " ";
+        Serial.println(SpecHMC5883::y);
+        //telemetry += " ";
+        Serial.println(SpecHMC5883::z);
+        //telemetry += " ";
+        //Serial.println(SpecHMC5883::heading); // deg
+        //telemetry += " ";
+        Serial.println(millis()/100); // ds
+        //telemetry += " ";
 
-        // // speed
-        // telemetry += SpecGPS::gps.speed.value();
-        // telemetry += " ";
-
-        // // location
-        // telemetry += SpecGPS::gps.location.lat();
-        // telemetry += " ";
-        // telemetry += SpecGPS::gps.location.lng();
-        // telemetry += " ";
-
-        // // add altitude
-        // telemetry += bmp.readOffsetAltitude();
-        // telemetry += " ";
-        
-        // // add angleX
-        // telemetry += SpecMPU6050::angleX;
-        // telemetry += " ";
-
-        // telemetry += millis()/1000;
-        // telemetry += " ";
-
-        telemetry += SpecGPS::gps.location.lat(); // deg
-        telemetry += " ";
-        telemetry += SpecGPS::gps.location.lng(); // deg
-        telemetry += " ";
-        telemetry += SpecGPS::gps.speed.mps(); // m/s
-        telemetry += " ";
-        telemetry += SpecGPS::gps.altitude.value(); // cm
-        telemetry += " ";
-        telemetry += bmp.readOffsetAltitude(); // m
-        telemetry += " ";
-        telemetry += SpecMPU6050::angleAccX; // deg
-        telemetry += " ";
-        telemetry += SpecMPU6050::angleAccY;
-        telemetry += " ";
-        telemetry += SpecMPU6050::angleAccZ;
-        telemetry += " ";
-        telemetry += SpecMPU6050::angleGyroX; // deg/s
-        telemetry += " ";
-        telemetry += SpecMPU6050::angleGyroY;
-        telemetry += " ";
-        telemetry += SpecMPU6050::angleGyroZ;
-        telemetry += " ";
-        telemetry += SpecHMC5883::x; // ?
-        telemetry += " ";
-        telemetry += SpecHMC5883::y;
-        telemetry += " ";
-        telemetry += SpecHMC5883::z;
-        telemetry += " ";
-        telemetry += SpecHMC5883::heading; // deg
-        telemetry += " ";
-        telemetry += millis()/100; // ds
-        telemetry += " ";
-
-        telemetry += "!";
-        SpecRFD900::sendTelemetry(telemetry);
-        SpecSD::writeTelemetry(telemetry);
+        //telemetry += "!";
+        //SpecRFD900::sendTelemetry(telemetry);
+        //SpecSD::writeTelemetry(telemetry);
         //Serial.println("sending telemetry");
-        Serial.println(telemetry);
+        //Serial.println(telemetry);
         SpecRFD900::UpdateTimer = millis();
 
     }
 
-    if(millis() - SpecSD::UpdateTimer > 1000/SpecSD::UpdatePeriod){
-        Serial.println(telemetry);
+    if(millis() - SpecSD::UpdateTimer > 1000 / SpecSD::UpdatePeriod){
+        SpecSD::writeTelemetry(SpecGPS::gps.location.lat(), 15);
+        SpecSD::writeTelemetry(SpecGPS::gps.location.lng(), 15); // deg
+        SpecSD::writeTelemetry(SpecGPS::gps.altitude.value() / 100, 1); // m
+        SpecSD::writeTelemetry(SpecGPS::gps.speed.mps(), 2); // m/s
+        SpecSD::writeTelemetry(bmp.readOffsetAltitude(), 2); // m
+        SpecSD::writeTelemetry(SpecMPU6050::angleAccX, 15); // deg
+        SpecSD::writeTelemetry(SpecMPU6050::angleAccY, 15);
+        SpecSD::writeTelemetry(SpecMPU6050::angleAccZ, 15);
+        SpecSD::writeTelemetry(SpecMPU6050::angleGyroX, 15); // deg/s
+        SpecSD::writeTelemetry(SpecMPU6050::angleGyroY, 15);
+        SpecSD::writeTelemetry(SpecMPU6050::angleGyroZ, 15);
+        SpecSD::writeTelemetry(SpecHMC5883::x, 10); // compass x
+        SpecSD::writeTelemetry(SpecHMC5883::y, 10);
+        SpecSD::writeTelemetry(SpecHMC5883::z, 10);
+        //SpecSD::writeTelemetry(SpecHMC5883::heading); // deg
+        SpecSD::writeTelemetry((float)millis()/1000, 1); // s
+        SpecSD::writeTelemetry("\n");
         SpecSD::UpdateTimer = millis();
     }
 
