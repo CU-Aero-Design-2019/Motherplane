@@ -1,24 +1,44 @@
 // Main file for SAE aero design 2019 motherplane
 
-#define DEBUG
+#define SDTELEMETRY
+#define RCIN
 
 #include "settings.h"
 #include <Servo.h>
 #include "constants.h"
-#include "USB.h"
+
 #include <SpecGPS.h>
-#include <SpecSD.h>
 #include <SpecMPU6050.h>
 #include <SpecRFD900.h>
 #include <SpecBMP180.h>
 #include <Drop.h>
-//#include <HMC5883L_Simple.h>
+
+#ifdef RCIN
+	#include <SBUS.h>
+#else
+	#include "USB.h"
+#endif
+
+#ifdef SDTELEMETRY
+	#include <SpecSD.h>
+#endif
 
 SpecBMP180 bmp;
-//HMC5883L_Simple compass;
 
+#ifdef RCIN
+	SBUS rcIn(Serial1);
+	uint16_t channel[16];
+	bool failsafe = false;
+	bool lostFrame = false;
+#endif
+
+// String to write telemetry to which will be sent to ground station
 String telemetry;
-String sdt;
+
+#ifdef SDTELEMETRY
+	// String to write telemetry to which will be sent to SD card
+	String sdt;
+#endif
 
 void setup() {
 	
@@ -27,9 +47,18 @@ void setup() {
 	
     // GPS setup
     SpecGPS::setup();
+	
+	Drop::setup();
+	
+	// USB and RC share Serial1 so only one should be used.
+	#ifdef RCIN
+		rcIn.begin();
+	#else
+		// USB serial setup
+		USB::setup();
+	#endif
 
-    // USB serial setup
-    USB::setup();
+    
 
     // IMU setup
     SpecMPU6050::setup();
@@ -38,8 +67,10 @@ void setup() {
     
     SpecRFD900::setup(&Serial3);
 
-    SpecSD::setup("test");
-
+	#ifdef SDTELEMETRY
+		SpecSD::setup("test");
+	#endif
+	
     if (!bmp.begin()) {
         Serial.println("Could not find a valid BMP085 sensor");
     }
@@ -48,16 +79,12 @@ void setup() {
 void loop() {
   
     // check for incoming serial data
-    USB::update();
+	#ifndef RCIN
+		USB::update();
+	#endif
     SpecRFD900::update();
 	
 	Drop::update();
-	
-	if (SpecGPS::gps.location.isUpdated()) {
-		digitalWrite(LED_BUILTIN, HIGH);
-	} else {
-		digitalWrite(LED_BUILTIN, LOW);
-	}
 
     // needs to be constantly updated
     SpecGPS::update();
@@ -100,6 +127,11 @@ void loop() {
 			telemetry += "0";
 		}
 		telemetry += " ";
+		
+		// RC throttle
+		rcIn.read(&channel[0], &failsafe, &lostFrame);
+		telemetry += String(channel[1]);
+		telemetry += " ";
 
         telemetry += "!";
         SpecRFD900::sendTelemetry(telemetry);
@@ -107,6 +139,7 @@ void loop() {
         SpecRFD900::UpdateTimer = millis();
     }
 
+	#ifdef SDTELEMETRY
     if (millis() - SpecSD::UpdateTimer > 1000 / SpecSD::UpdatePeriod) {
         sdt = "";
 		sdt += String(SpecGPS::gps.location.lat(), 9);
@@ -138,5 +171,6 @@ void loop() {
 		SpecSD::writeTelemetry(sdt);
         SpecSD::UpdateTimer = millis();
     }
+	#endif
 
 }
