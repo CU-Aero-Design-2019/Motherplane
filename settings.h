@@ -19,20 +19,22 @@ struct SettingsStruct
     char targetLongitude[varSize];
     char targetLatitude[varSize];
     char targetAltitude[varSize];
+	unsigned int fileIndex;
 };
 
 void saveSettings()
 {
+	// create object to be pushed to EEPROM
     SettingsStruct sendingSettings;
+	// record time
     sendingSettings.saveTime = millis();
-    targetLongitude.toCharArray(sendingSettings.targetLongitude, 20);
+    // record lat long alt
+	targetLongitude.toCharArray(sendingSettings.targetLongitude, 20);
     targetLatitude.toCharArray(sendingSettings.targetLatitude, 20);
     targetAltitude.toCharArray(sendingSettings.targetAltitude, 20);
-    for (int addressOffset = 0; addressOffset < sizeof(sendingSettings); addressOffset++)
-    {
-        #ifdef DEBUG
-        //Serial.println("Writing EEPROM");
-        #endif
+    
+	// write
+	for (int addressOffset = 0; addressOffset < sizeof(sendingSettings); addressOffset++) {
         EEPROM.write(StartAddress + addressOffset, *((char *)&sendingSettings + addressOffset));
     }
 }
@@ -44,12 +46,10 @@ void loadSettings()
     {
         *((char *)&loaded + addressOffset) = EEPROM.read(StartAddress + addressOffset);
     }
-#ifdef DEBUG
     Serial.println(loaded.saveTime);
     Serial.println(loaded.targetLongitude);
     Serial.println(loaded.targetLatitude);
     Serial.println(loaded.targetAltitude);
-#endif
 }
 
 void setTarget(String newLongitude, String newLatitude, String newAltitude)
