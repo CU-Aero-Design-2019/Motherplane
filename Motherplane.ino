@@ -1,7 +1,8 @@
 // Main file for SAE aero design 2019 motherplane
 
-#define SDTELEMETRY
-#define RCIN
+//#define SDTELEMETRY
+//#define RCIN
+//#define LOOPTRACKER
 
 #include "settings.h"
 #include <Servo.h>
@@ -11,7 +12,7 @@
 #include <SpecMPU6050.h>
 #include <SpecRFD900.h>
 #include <SpecBMP180.h>
-#include <Drop.h>
+#include "Drop.h"
 
 #ifdef RCIN
 	#include <SBUS.h>
@@ -40,6 +41,10 @@ String telemetry;
 	String sdt;
 #endif
 
+#ifdef LOOPTRACKER
+	long startTime;
+#endif
+
 void setup() {
 	
     // load settings from EEPROM
@@ -58,12 +63,13 @@ void setup() {
 		USB::setup();
 	#endif
 
-    
-
     // IMU setup
     SpecMPU6050::setup();
-
-    delay(1000);
+			
+	// bmp.begin() delays for about (35 * int)ms
+	if (!bmp.begin(50)) {
+        Serial.println("Could not find a valid BMP085 sensor");
+    }
     
     SpecRFD900::setup(&Serial3);
 
@@ -71,25 +77,27 @@ void setup() {
 		SpecSD::setup("test");
 	#endif
 	
-    if (!bmp.begin()) {
-        Serial.println("Could not find a valid BMP085 sensor");
-    }
+    Serial.println("Starting Loop");
 }
 
 void loop() {
-  
+	
+	#ifdef LOOPTRACKER
+		startTime = millis();
+	#endif
+	
     // check for incoming serial data
 	#ifndef RCIN
 		USB::update();
 	#endif
     SpecRFD900::update();
 	
-	Drop::update();
+	//Drop::update();
 
     // needs to be constantly updated
     SpecGPS::update();
     
-    if (millis() - SpecMPU6050::UpdateTimer > 1000/SpecMPU6050::UpdatePeriod) {
+    if (millis() - SpecMPU6050::UpdateTimer > 1000 / SpecMPU6050::UpdatePeriod) {
         SpecMPU6050::update();
         SpecMPU6050::UpdateTimer = millis();
     }
@@ -112,7 +120,7 @@ void loop() {
         telemetry += " ";
 
         // add altitude
-        telemetry += bmp.readOffsetAltitude();
+        telemetry += bmp.readAvgOffsetAltitude();
         telemetry += " ";
 
         telemetry += millis()/100;
@@ -128,11 +136,13 @@ void loop() {
 		}
 		telemetry += " ";
 		
-		// RC throttle
-		rcIn.read(&channel[0], &failsafe, &lostFrame);
-		telemetry += String(channel[1]);
-		telemetry += " ";
-
+		#ifdef RCIN
+			// RC throttle
+			rcIn.read(&channel[0], &failsafe, &lostFrame);
+			telemetry += String(channel[1]);
+			telemetry += " ";
+		#endif
+		
         telemetry += "!";
         SpecRFD900::sendTelemetry(telemetry);
         Serial.println(telemetry);
@@ -171,6 +181,14 @@ void loop() {
 		SpecSD::writeTelemetry(sdt);
         SpecSD::UpdateTimer = millis();
     }
+	#endif
+	
+	#ifdef LOOPTRACKER
+	// to test how long it takes to run the loop
+	long loopTime = millis() - startTime;
+	if(loopTime > 4) {
+		Serial.println("Total Time: " + String(loopTime));
+	}
 	#endif
 
 }
