@@ -36,58 +36,21 @@
 		tarLLA.lat = Settings::targetLatitude;
 		tarLLA.lng = Settings::targetLongitude;
 		tarLLA.alt = Settings::targetAltitude;
-		
-		// Serial.println("Target LLA");
-		// Serial.println("L = " + String(tarLLA.lat, 9));
-		// Serial.println("L = " + String(tarLLA.lng, 9));
-		// Serial.println("A = " + String(tarLLA.alt, 2));
 	
 		// convert target to ECEF, which is needed for ENU - WORKS
 		SpecGPS::lla_to_ecef(tarLLA, tarECEF);
-		
-		// Serial.println("Target ECEF");
-		// Serial.println("x = " + String(tarECEF.x));
-		// Serial.println("y = " + String(tarECEF.y));
-		// Serial.println("z = " + String(tarECEF.z));
 		
 	}
 	
 	void update() {
 		
-		// update current LLA
-		// curLLA.lat = SpecGPS::gps.location.lat();
-		// curLLA.lng = SpecGPS::gps.location.lng();
-		// curLLA.alt = bmp.readAvgOffsetAltitude();
-		
-		// for testing - WORKS
 		curLLA.lat = 39.748119;
 		curLLA.lng = -83.813505;
 		curLLA.alt = 40;
 		
-		Serial.println("Current LLA");
-		Serial.println("La = " + String(curLLA.lat, 9));
-		Serial.println("Lo = " + String(curLLA.lng, 9));
-		Serial.println("A = " + String(curLLA.alt, 2));
-		
 		prevENU = curENU;
 		
-		Serial.println("Target LLA");
-		Serial.println("La = " + String(tarLLA.lat, 9));
-		Serial.println("Lo = " + String(tarLLA.lng, 9));
-		Serial.println("A = " + String(tarLLA.alt, 2));
-		
-		Serial.println("Target ECEF");
-		Serial.println("x = " + String(tarECEF.x));
-		Serial.println("y = " + String(tarECEF.y));
-		Serial.println("z = " + String(tarECEF.z));
-		
-		// get new ENU values - DOESN'T WORK?
 		SpecGPS::lla_to_enu(curLLA, tarLLA, tarECEF, curENU);
-		
-		Serial.println("Current ENU");
-		Serial.println("E = " + String(curENU.e));
-		Serial.println("N = " + String(curENU.n));
-		Serial.println("U = " + String(curENU.u));
 		
 		makePrediction();
 	}
@@ -98,10 +61,6 @@
 		float uIni = (curENU.e - prevENU.e) / 0.1;
 		float vIni = (curENU.n - prevENU.n) / 0.1;
 		float wIni = (curENU.u - prevENU.u) / 0.1;
-		
-		// Serial.println("Vel X = " + String(uIni));
-		// Serial.println("Vel Y = " + String(vIni));
-		// Serial.println("Vel Z = " + String(wIni));
 		
 		float x = curENU.e;
         float y = curENU.n;
@@ -126,10 +85,6 @@
             x = u*tDel + x;
             y = v*tDel + y;
             z = w*tDel + z;
-			
-			// Serial.println("X = " + String(x));
-			// Serial.println("Y = " + String(y));
-			// Serial.println("Z = " + String(z));
             
             u = u + (ax*tDel);
             v = v + (ay*tDel);
