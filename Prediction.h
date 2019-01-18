@@ -44,9 +44,14 @@
 	
 	void update() {
 		
-		curLLA.lat = 39.748119;
-		curLLA.lng = -83.813505;
-		curLLA.alt = 40;
+		// curLLA.lat = 39.748119;
+		// curLLA.lng = -83.813505;
+		// curLLA.alt = 40;
+		
+		update current LLA
+		curLLA.lat = SpecGPS::gps.location.lat();
+		curLLA.lng = SpecGPS::gps.location.lng();
+		curLLA.alt = bmp.readAvgOffsetAltitude();
 		
 		prevENU = curENU;
 		
@@ -102,7 +107,7 @@
 		// Serial.println("E: " + String(prediction.e, 9));
 		// Serial.println("N: " + String(prediction.n, 9));
 		// Serial.println("U: " + String(prediction.u, 2));
-				
+		
 	}
  
  };
