@@ -2,6 +2,7 @@
 #define DROP_H
 
 #include "settings.h"
+#include <SpecGPS.h>
 
 namespace Drop {
 	
@@ -25,6 +26,12 @@ namespace Drop {
 	const int glider2Undropped = 45;
 	const int glider2Dropped = 135;
 	
+	double latSum = 0.0;
+	double lngSum = 0.0;
+	double altSum = 0.0;
+	uint16_t nLocationSamples = 0;
+	long lastSampleTime = 0;
+	
 	Servo waterServo;
 	Servo habServo;
 	Servo glider1Servo;
@@ -44,9 +51,6 @@ namespace Drop {
 	
 	void update() {
 	
-		if (collectTarget) {
-			
-		}
 		if (dropArmed) {
 			if (autoDrop) {
 				
@@ -72,15 +76,44 @@ namespace Drop {
 					glider2Servo.write(glider2Undropped);
 				} 
 			}
+		} else {
+			if (collectTarget) {
+			//if (1) {
+				// only collect every 100ms
+				if (millis() - lastSampleTime > 100) {
+					latSum += SpecGPS::gps.location.lat();
+					lngSum += SpecGPS::gps.location.lng();
+					altSum += SpecGPS::gps.altitude.meters();
+					nLocationSamples++;
+					// change the vars that are in memory
+					Settings::targetLatitude = latSum / nLocationSamples;
+					Settings::targetLongitude = lngSum / nLocationSamples;
+					Settings::targetAltitude = altSum / nLocationSamples;
+					
+					Serial.print("Saving Lat: "); Serial.println(Settings::targetLatitude);
+					Serial.print("Saving Lng: "); Serial.println(Settings::targetLongitude);
+					
+					// save those vars to eeprom
+					Settings::saveSettings();
+					
+					lastSampleTime = millis();
+				}
+			} else {
+				latSum = 0.0;
+				lngSum = 0.0;
+				altSum = 0.0;
+				nLocationSamples = 0;
+			}
 		}
 		
-		Serial.print("W " + String(dropWater) + ", ");
-		Serial.print("H " + String(dropHabs) + ", ");
-		Serial.print("G1 " + String(dropGlider1) + ", ");
-		Serial.print("G2 " + String(dropGlider2) + ", ");
-		Serial.print("Arm " + String(dropArmed) + ", ");
-		Serial.print("Auto " + String(autoDrop) + ", ");
-		Serial.print("Tar " + String(collectTarget) + "\n");
+		// Serial.print("Tar " + String(collectTarget) + "\n");
+		// Serial.print("Arm " + String(dropArmed) + ", ");
+		// Serial.print("Auto " + String(autoDrop) + ", ");
+		// Serial.print("G1 " + String(dropGlider1) + ", ");
+		// Serial.print("G2 " + String(dropGlider2) + ", ");
+		// Serial.print("H " + String(dropHabs) + ", ");
+		// Serial.print("W " + String(dropWater) + ", ");
+		
 	}
 
 }

@@ -10,7 +10,7 @@
 
 #include <SpecGPS.h>
 #include <SpecMPU6050.h>
-#include <SpecRFD900.h>
+#include "SpecRFD900.h"
 #include <SpecBMP180.h>
 #include "Drop.h"
 
@@ -25,6 +25,8 @@
 #endif
 
 SpecBMP180 bmp;
+
+#include "Prediction.h"
 
 #ifdef RCIN
 	SBUS rcIn(Serial1);
@@ -46,9 +48,6 @@ String telemetry;
 #endif
 
 void setup() {
-	
-    // load settings from EEPROM
-    Settings::loadSettings();
 	
     // GPS setup
     SpecGPS::setup();
@@ -72,12 +71,15 @@ void setup() {
     }
     
     SpecRFD900::setup(&Serial3);
+	
+	// load settings from EEPROM
+    Settings::loadSettings();
+	
+	Prediction::setup();
 
 	#ifdef SDTELEMETRY
 		SpecSD::setup("test");
 	#endif
-	
-    Serial.println("Starting Loop");
 }
 
 void loop() {
@@ -92,7 +94,7 @@ void loop() {
 	#endif
     SpecRFD900::update();
 	
-	//Drop::update();
+	Drop::update();
 
     // needs to be constantly updated
     SpecGPS::update();
@@ -100,6 +102,11 @@ void loop() {
     if (millis() - SpecMPU6050::UpdateTimer > 1000 / SpecMPU6050::UpdatePeriod) {
         SpecMPU6050::update();
         SpecMPU6050::UpdateTimer = millis();
+    }
+
+	if (millis() - Prediction::UpdateTimer > 1000 / Prediction::UpdatePeriod) {
+        Prediction::update();
+        Prediction::UpdateTimer = millis();
     }
 
     if (millis() - SpecRFD900::UpdateTimer > 1000 / SpecRFD900::UpdatePeriod) {
@@ -114,9 +121,9 @@ void loop() {
         telemetry += " ";
 
         // location
-        telemetry += SpecGPS::gps.location.lat();
+        telemetry += String(SpecGPS::gps.location.lat(), 6);
         telemetry += " ";
-        telemetry += SpecGPS::gps.location.lng();
+        telemetry += String(SpecGPS::gps.location.lng(), 6);;
         telemetry += " ";
 
         // add altitude
@@ -126,16 +133,12 @@ void loop() {
         telemetry += millis()/100;
         telemetry += " ";
 		
-		telemetry += SpecGPS::gps.altitude.meters();
-		telemetry += " ";
+		telemetry += String(Prediction::prediction.e, 6);
+        telemetry += " ";
 		
-		if (SpecGPS::hasLock) {
-			telemetry += "1";
-		} else {
-			telemetry += "0";
-		}
-		telemetry += " ";
-		
+		telemetry += String(Prediction::prediction.n, 6);
+        telemetry += " ";
+				
 		#ifdef RCIN
 			// RC throttle
 			rcIn.read(&channel[0], &failsafe, &lostFrame);
@@ -145,6 +148,7 @@ void loop() {
 		
         telemetry += "!";
         SpecRFD900::sendTelemetry(telemetry);
+		Serial.print(SpecRFD900::in, HEX);
         Serial.println(telemetry);
         SpecRFD900::UpdateTimer = millis();
     }

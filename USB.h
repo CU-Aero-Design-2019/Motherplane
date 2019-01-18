@@ -15,6 +15,8 @@ namespace USB{
 
     void setup(){
         Serial.begin(USBSerialBaudrate);
+		delay(1000);
+		//Serial.println("USB Serial Started");
     }
 
     // does stuff with the incoming string
@@ -27,7 +29,6 @@ namespace USB{
             Serial.println(y);
             String z = incoming.substring(6,7);
             Serial.println(z);
-            Settings::setTarget(x, y, z);
         }else if(incoming.substring(0, 4).equals("GTAR")){
             Settings::loadSettings();
         }else if(incoming.substring(0, 4).equals("SRVO")){

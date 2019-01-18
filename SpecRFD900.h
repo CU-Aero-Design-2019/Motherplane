@@ -24,47 +24,49 @@ namespace SpecRFD900 {
 	// does stuff with the incoming string
 	// should be called from update()
 	void parse() {
-		if (in ^ 0b10000000) {
+		//Serial.println("Getting RFD data");
+		if (in & 0b10000000) {
 			Drop::collectTarget = true;
 		} else {
-			//Drop::collectTarget = false;
+			Drop::collectTarget = false;
 		}
 		
-		if (in ^ 0b00100000) {
+		if (in & 0b00100000) {
 			Drop::dropArmed = true;
 		} else {
 			Drop::dropArmed = false;
 		}
 		
-		if (in ^ 0b00010000) {
+		if (in & 0b00010000) {
 			Drop::autoDrop = true;
 		} else {
 			Drop::autoDrop = false;
 		}
 		
-		if (in ^ 0b00001000) {
+		if (in & 0b00001000) {
 			Drop::dropGlider1 = true;
 		} else {
 			Drop::dropGlider1 = false;
 		}
 		
-		if (in ^ 0b00000100) {
+		if (in & 0b00000100) {
 			Drop::dropGlider2 = true;
 		} else {
 			Drop::dropGlider2 = false;
 		}
 		
-		if (in ^ 0b00000010) {
+		if (in & 0b00000010) {
 			Drop::dropHabs = true;
 		} else {
 			Drop::dropHabs = false;
 		}
 		
-		if (in ^ 0b00000001) {
+		if (in & 0b00000001) {
 			Drop::dropWater = true;
 		} else {
 			Drop::dropWater = false;
 		}
+		//Serial.println(in);
 		Drop::update();
 	}
 	
