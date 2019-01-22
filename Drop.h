@@ -18,6 +18,7 @@ namespace Drop {
 	bool droppedGlider2 = false;
 	bool droppedHabs = false;
 	bool droppedWater = false;
+	byte sendBack = 0;
 	
 	const int waterUndropped = 45;
 	const int waterDropped = 135;
@@ -86,22 +87,24 @@ namespace Drop {
 			//if (1) {
 				// only collect every 100ms
 				if (millis() - lastSampleTime > 100) {
-					latSum += SpecGPS::gps.location.lat();
-					lngSum += SpecGPS::gps.location.lng();
-					altSum += SpecGPS::gps.altitude.meters();
-					nLocationSamples++;
-					// change the vars that are in memory
-					Settings::targetLatitude = latSum / nLocationSamples;
-					Settings::targetLongitude = lngSum / nLocationSamples;
-					Settings::targetAltitude = altSum / nLocationSamples;
-					
-					Serial.print("Saving Lat: "); Serial.println(Settings::targetLatitude);
-					Serial.print("Saving Lng: "); Serial.println(Settings::targetLongitude);
-					
-					// save those vars to eeprom
-					Settings::saveSettings();
-					
-					lastSampleTime = millis();
+					if (SpecGPS::gps.location.lat() != 0.0) {
+						latSum += SpecGPS::gps.location.lat();
+						lngSum += SpecGPS::gps.location.lng();
+						altSum += SpecGPS::gps.altitude.meters();
+						nLocationSamples++;
+						// change the vars that are in memory
+						Settings::targetLatitude = latSum / nLocationSamples;
+						Settings::targetLongitude = lngSum / nLocationSamples;
+						Settings::targetAltitude = altSum / nLocationSamples;
+						
+						Serial.print("Saving Lat: "); Serial.println(Settings::targetLatitude);
+						Serial.print("Saving Lng: "); Serial.println(Settings::targetLongitude);
+						
+						// save those vars to eeprom
+						Settings::saveSettings();
+						
+						lastSampleTime = millis();
+					}
 				}
 			} else {
 				latSum = 0.0;
@@ -111,13 +114,28 @@ namespace Drop {
 			}
 		}
 		
-		// Serial.print("Tar " + String(collectTarget) + "\n");
-		// Serial.print("Arm " + String(dropArmed) + ", ");
-		// Serial.print("Auto " + String(autoDrop) + ", ");
-		// Serial.print("G1 " + String(dropGlider1) + ", ");
-		// Serial.print("G2 " + String(dropGlider2) + ", ");
-		// Serial.print("H " + String(dropHabs) + ", ");
-		// Serial.print("W " + String(dropWater) + ", ");
+		// update telemetry values
+		sendBack = 0;
+		if (droppedGlider1) {
+			sendBack |= 0b00000001;
+		}
+		if (droppedGlider2) {
+			sendBack |= 0b00000010;
+		}
+		if (droppedHabs) {
+			sendBack |= 0b00000100;
+		}
+		if (droppedWater) {
+			sendBack |= 0b00001000;
+		}
+		
+		Serial.print("Tar " + String(collectTarget) + "\n");
+		Serial.print("Arm " + String(dropArmed) + ", ");
+		Serial.print("Auto " + String(autoDrop) + ", ");
+		Serial.print("G1 " + String(dropGlider1) + ", ");
+		Serial.print("G2 " + String(dropGlider2) + ", ");
+		Serial.print("H " + String(dropHabs) + ", ");
+		Serial.print("W " + String(dropWater) + ", ");
 		
 	}
 

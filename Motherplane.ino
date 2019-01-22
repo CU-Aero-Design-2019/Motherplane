@@ -2,12 +2,12 @@
 
 //#define SDTELEMETRY
 //#define RCIN
-#define LOOPTRACKER
+//#define LOOPTRACKER
 
 #include "settings.h"
 #include <Servo.h>
 #include "constants.h"
-
+//#include <SimpleKalmanFilter.h>
 #include <SpecGPS.h>
 #include <SpecMPU6050.h>
 #include "SpecRFD900.h"
@@ -37,6 +37,9 @@ SpecBMP180 bmp;
 
 // String to write telemetry to which will be sent to ground station
 String telemetry;
+
+// SimpleKalmanFilter latFilter(0.000001, 0.000001, 0.01);
+// SimpleKalmanFilter lngFilter(0.000001, 0.000001, 0.01);
 
 #ifdef SDTELEMETRY
 	// String to write telemetry to which will be sent to SD card
@@ -122,10 +125,18 @@ void loop() {
         telemetry += SpecGPS::gps.speed.value();
         telemetry += " ";
 
+		// float lat = latFilter.updateEstimate(SpecGPS::gps.location.lat());
+		// float lng = lngFilter.updateEstimate(SpecGPS::gps.location.lng());
+		
         // location
-        telemetry += String(SpecGPS::gps.location.lat(), 6);
+        // telemetry += String(lat, 8);
+        // telemetry += " ";
+        // telemetry += String(lng, 8);;
+        // telemetry += " ";
+		
+		telemetry += String(SpecGPS::gps.location.lat(), 8);
         telemetry += " ";
-        telemetry += String(SpecGPS::gps.location.lng(), 6);;
+        telemetry += String(SpecGPS::gps.location.lng(), 8);;
         telemetry += " ";
 
         // add altitude
@@ -140,6 +151,9 @@ void loop() {
         telemetry += " ";
 		
 		telemetry += String(Prediction::prediction.n, 1);
+        telemetry += " ";
+		
+		telemetry += String(Drop::sendBack, HEX);
         telemetry += " ";
 				
 		#ifdef RCIN
