@@ -14,6 +14,11 @@ namespace Drop {
 	bool dropHabs = false;
 	bool dropWater = false;
 	
+	bool droppedGlider1 = false;
+	bool droppedGlider2 = false;
+	bool droppedHabs = false;
+	bool droppedWater = false;
+	
 	const int waterUndropped = 45;
 	const int waterDropped = 135;
 	

@@ -12,6 +12,8 @@ namespace USB{
     String incoming = "";
     bool waitingForSerial = false;
     long firstSerialAvailableTime;
+	
+	const int USBSerialBaudrate = 250000;
 
     void setup(){
         Serial.begin(USBSerialBaudrate);

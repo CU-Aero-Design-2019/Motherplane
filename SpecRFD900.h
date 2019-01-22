@@ -5,7 +5,7 @@
 
 namespace SpecRFD900 {
 	unsigned long UpdateTimer = 0;
-	const unsigned long UpdatePeriod = 10;
+	const unsigned long UpdatePeriod = 100;
 
 	int baudrate = 9600;
 	HardwareSerial *RFD900;

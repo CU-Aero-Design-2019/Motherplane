@@ -2,7 +2,7 @@
 
 //#define SDTELEMETRY
 //#define RCIN
-//#define LOOPTRACKER
+#define LOOPTRACKER
 
 #include "settings.h"
 #include <Servo.h>
@@ -98,6 +98,8 @@ void loop() {
 
     // needs to be constantly updated
     SpecGPS::update();
+	
+	bmp.update();
     
     if (millis() - SpecMPU6050::UpdateTimer > 1000 / SpecMPU6050::UpdatePeriod) {
         SpecMPU6050::update();
@@ -127,16 +129,17 @@ void loop() {
         telemetry += " ";
 
         // add altitude
-        telemetry += bmp.readAvgOffsetAltitude();
+        telemetry += bmp.getKAlt();
+		//telemetry += bmp.readAvgOffsetAltitude();
         telemetry += " ";
 
         telemetry += millis()/100;
         telemetry += " ";
 		
-		telemetry += String(Prediction::prediction.e, 6);
+		telemetry += String(Prediction::prediction.e, 1);
         telemetry += " ";
 		
-		telemetry += String(Prediction::prediction.n, 6);
+		telemetry += String(Prediction::prediction.n, 1);
         telemetry += " ";
 				
 		#ifdef RCIN
@@ -148,8 +151,8 @@ void loop() {
 		
         telemetry += "!";
         SpecRFD900::sendTelemetry(telemetry);
-		Serial.print(SpecRFD900::in, HEX);
-        Serial.println(telemetry);
+		Serial.print(telemetry + " ");
+		Serial.println(SpecRFD900::in, HEX);
         SpecRFD900::UpdateTimer = millis();
     }
 
