@@ -12,6 +12,9 @@
 #include <SpecMPU6050.h>
 #include "SpecRFD900.h"
 #include <SpecBMP180.h>
+#ifdef MEMORYCHECK
+	#include <MemoryFree.h>;
+#endif
 #include "Drop.h"
 
 #ifdef RCIN
@@ -115,7 +118,9 @@ void loop() {
     }
 
     if (millis() - SpecRFD900::UpdateTimer > 1000 / SpecRFD900::UpdatePeriod) {
-        telemetry = "";
+        SpecRFD900::UpdateTimer = millis();
+		
+		telemetry = "";
 
         // add current time
         telemetry += SpecGPS::gps.time.value();
@@ -166,13 +171,17 @@ void loop() {
         telemetry += "!";
         SpecRFD900::sendTelemetry(telemetry);
 		Serial.print(telemetry + " ");
+		#ifdef MEMORYCHECK
+			Serial.print(freeMemory(), DEC);
+			Serial.print(" ");
+		#endif
 		Serial.println(SpecRFD900::in, HEX);
-        SpecRFD900::UpdateTimer = millis();
     }
 
 	#ifdef SDTELEMETRY
     if (millis() - SpecSD::UpdateTimer > 1000 / SpecSD::UpdatePeriod) {
-        sdt = "";
+        SpecSD::UpdateTimer = millis();
+		sdt = "";
 		sdt += String(SpecGPS::gps.location.lat(), 9);
 		sdt += " ";
         sdt += String(SpecGPS::gps.location.lng(), 9); // deg
@@ -200,7 +209,6 @@ void loop() {
 		sdt += String(SpecGPS::gps.time.centisecond());
         sdt += String("\n");
 		SpecSD::writeTelemetry(sdt);
-        SpecSD::UpdateTimer = millis();
     }
 	#endif
 	

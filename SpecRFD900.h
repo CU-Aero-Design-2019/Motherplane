@@ -5,7 +5,7 @@
 
 namespace SpecRFD900 {
 	unsigned long UpdateTimer = 0;
-	const unsigned long UpdatePeriod = 100;
+	const unsigned long UpdatePeriod = 10;
 
 	int baudrate = 9600;
 	HardwareSerial *RFD900;
@@ -24,6 +24,9 @@ namespace SpecRFD900 {
 	// does stuff with the incoming string
 	// should be called from update()
 	void parse() {
+		if (in == 0) {
+			Serial.println("No ground telem");
+		}
 		//Serial.println("Getting RFD data");
 		if (in & 0b10000000) {
 			Drop::collectTarget = true;

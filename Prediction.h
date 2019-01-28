@@ -16,6 +16,7 @@
 	
 	// previous location
 	SpecGPS::ENU prevENU;
+	SpecGPS::LLA prevLLA;
 	
 	// and target coords
 	SpecGPS::ECEF tarECEF;
@@ -48,6 +49,8 @@
 		// curLLA.lng = -83.813505;
 		// curLLA.alt = 40;
 		
+		prevLLA = curLLA;
+		
 		//update current LLA
 		curLLA.lat = SpecGPS::gps.location.lat();
 		curLLA.lng = SpecGPS::gps.location.lng();
@@ -63,10 +66,13 @@
 	
 	SpecGPS::ENU makePrediction(float uAirGround, float uAirPlane, float vAirGround, float vAirPlane, float packageMass) {
 		
-		// find velocity from two points - WORKS for 0...
-		float uIni = (curENU.e - prevENU.e) / 0.1;
-		float vIni = (curENU.n - prevENU.n) / 0.1;
-		float wIni = (curENU.u - prevENU.u) / 0.1;
+		float speed = SpecGPS::gps.speed.mps() / 10;
+		float bearing = SpecGPS::bearing(prevLLA.lat, prevLLA.lng, curLLA.lat, curLLA.lng);
+		
+		// find velocity from speed and bearing
+		float uIni = speed * cos(bearing * 180 / 3.14159265);
+		float vIni = speed * sin(bearing * 180 / 3.14159265);
+		float wIni = 0;
 		
 		float x = curENU.e;
         float y = curENU.n;

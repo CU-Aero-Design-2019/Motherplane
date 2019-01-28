@@ -63,23 +63,31 @@ namespace Drop {
 			} else {
 				if (dropWater) {
 					waterServo.write(waterDropped);
+					droppedWater = true;
 				} else {
 					waterServo.write(waterUndropped);
+					droppedWater = false;
 				}
 				if (dropHabs) {
 					habServo.write(habsDropped);
+					droppedHabs = true;
 				} else {
 					habServo.write(habsUndropped);
+					droppedHabs = false;
 				}
 				if (dropGlider1) {
 					glider1Servo.write(glider1Dropped);
+					droppedGlider1 = true;
 				} else {
 					glider1Servo.write(glider1Undropped);
+					droppedGlider1 = false;
 				}
 				if (dropGlider2) {
 					glider2Servo.write(glider2Dropped);
+					droppedGlider2 = true;
 				} else {
 					glider2Servo.write(glider2Undropped);
+					droppedGlider2 = false;
 				} 
 			}
 		} else {
@@ -117,25 +125,25 @@ namespace Drop {
 		// update telemetry values
 		sendBack = 0;
 		if (droppedGlider1) {
-			sendBack |= 0b00000001;
-		}
-		if (droppedGlider2) {
-			sendBack |= 0b00000010;
-		}
-		if (droppedHabs) {
-			sendBack |= 0b00000100;
-		}
-		if (droppedWater) {
 			sendBack |= 0b00001000;
 		}
+		if (droppedGlider2) {
+			sendBack |= 0b00000100;
+		}
+		if (droppedHabs) {
+			sendBack |= 0b00000010;
+		}
+		if (droppedWater) {
+			sendBack |= 0b00000001;
+		}
 		
-		Serial.print("Tar " + String(collectTarget) + "\n");
-		Serial.print("Arm " + String(dropArmed) + ", ");
-		Serial.print("Auto " + String(autoDrop) + ", ");
-		Serial.print("G1 " + String(dropGlider1) + ", ");
-		Serial.print("G2 " + String(dropGlider2) + ", ");
-		Serial.print("H " + String(dropHabs) + ", ");
-		Serial.print("W " + String(dropWater) + ", ");
+		// Serial.print("Tar " + String(collectTarget) + ", ");
+		// Serial.print("Arm " + String(dropArmed) + ", ");
+		// Serial.print("Auto " + String(autoDrop) + ", ");
+		// Serial.print("G1 " + String(dropGlider1) + ", ");
+		// Serial.print("G2 " + String(dropGlider2) + ", ");
+		// Serial.print("H " + String(dropHabs) + ", ");
+		// Serial.print("W " + String(dropWater) + ", ");
 		
 	}
 
