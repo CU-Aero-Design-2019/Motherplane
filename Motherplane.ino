@@ -175,6 +175,7 @@ void loop() {
 			Serial.print(freeMemory(), DEC);
 			Serial.print(" ");
 		#endif
+		Serial.print(Prediction::bearing);
 		Serial.println(SpecRFD900::in, HEX);
     }
 

@@ -23,6 +23,8 @@
 	SpecGPS::LLA tarLLA;
 	
 	SpecGPS::ENU prediction;
+
+	float bearing;
 	
 	const float tDel = 0.01;
 	const float dragVert = 0.01;
@@ -67,7 +69,7 @@
 	SpecGPS::ENU makePrediction(float uAirGround, float uAirPlane, float vAirGround, float vAirPlane, float packageMass) {
 		
 		float speed = SpecGPS::gps.speed.mps() / 10;
-		float bearing = SpecGPS::bearing(prevLLA.lat, prevLLA.lng, curLLA.lat, curLLA.lng);
+		bearing = SpecGPS::bearing(prevLLA.lat, prevLLA.lng, curLLA.lat, curLLA.lng);
 		
 		// find velocity from speed and bearing
 		float uIni = speed * cos(bearing * 180 / 3.14159265);
