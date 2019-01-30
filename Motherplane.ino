@@ -139,10 +139,17 @@ void loop() {
         // telemetry += String(lng, 8);;
         // telemetry += " ";
 		
-		telemetry += String(SpecGPS::gps.location.lat(), 8);
-        telemetry += " ";
-        telemetry += String(SpecGPS::gps.location.lng(), 8);;
-        telemetry += " ";
+		if (Drop::acquireTarget) {
+			telemetry += String(settings::targetLatitude, 8);
+	        telemetry += " ";
+	        telemetry += String(settings::targetLongitude, 8);;
+	        telemetry += " ";
+		} else {
+			telemetry += String(SpecGPS::gps.location.lat(), 8);
+	        telemetry += " ";
+	        telemetry += String(SpecGPS::gps.location.lng(), 8);;
+	        telemetry += " ";
+	    }
 
         // add altitude
         telemetry += bmp.getKAlt();
