@@ -3,8 +3,9 @@
 
 #include "constants.h"
 #include "settings.h"
+#include "Drop.h"
 
-Servo testServo;
+//Servo testServo;
 
 // struct to hold serial communication stuff
 namespace USB{
@@ -17,13 +18,13 @@ namespace USB{
 
     void setup(){
         Serial.begin(USBSerialBaudrate);
-		delay(1000);
 		//Serial.println("USB Serial Started");
     }
 
     // does stuff with the incoming string
     // should be called from update()
     void parse(){
+        incoming = incoming.toUpperCase();
         if(incoming.substring(0, 4).equals("STAR")){
             String x = incoming.substring(4,5);
             Serial.println(x);
@@ -34,9 +35,21 @@ namespace USB{
         }else if(incoming.substring(0, 4).equals("GTAR")){
             Settings::loadSettings();
         }else if(incoming.substring(0, 4).equals("SRVO")){
-            Serial.println(incoming.substring(4));
-            Serial.println(incoming.substring(4).toInt());
-            //testServo.write(incoming.substring(4).toInt());
+            incoming = incoming.substring(5);
+            Serial.println(incoming);
+
+            if(incoming.substring(0, 4).equals("AUTO")){
+                Drop::manualServo = false;
+                return;
+            }
+            
+            int index = incoming.substring(0, incoming.indexOf(' ')).toInt();
+            int val = incoming.substring(2, incoming.indexOf(' ', 2)).toInt();
+
+            Drop::manualServo = true;
+
+            Drop::manuallySet(index, val);
+
         }
     }
 
