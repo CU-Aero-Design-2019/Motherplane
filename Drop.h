@@ -20,23 +20,25 @@ namespace Drop {
 	bool droppedWater = false;
 	byte sendBack = 0;
 	
-	const int waterUndropped = 45;
-	const int waterDropped = 135;
+	int waterUndropped = 45;
+	int waterDropped = 135;
 	
-	const int habsUndropped = 45;
-	const int habsDropped = 135;
+	int habsUndropped = 5;
+	int habsDropped = 150;
 	
-	const int glider1Undropped = 45;
-	const int glider1Dropped = 135;
+	int glider1Undropped = 45;
+	int glider1Dropped = 135;
 	
-	const int glider2Undropped = 45;
-	const int glider2Dropped = 135;
+	int glider2Undropped = 45;
+	int glider2Dropped = 135;
 	
 	double latSum = 0.0;
 	double lngSum = 0.0;
 	double altSum = 0.0;
 	uint16_t nLocationSamples = 0;
 	long lastSampleTime = 0;
+
+	bool manualServo = false;
 	
 	Servo waterServo;
 	Servo habServo;
@@ -54,10 +56,31 @@ namespace Drop {
 		glider1Servo.write(glider1Undropped);
 		glider2Servo.write(glider2Undropped);
 	}
+
+	void manuallySet(int servo, int value) {
+
+		Serial.println("Setting servo " + String(servo) + " to " + String(value));
+
+		switch(servo){
+			case 0:
+				waterServo.write(value);
+				break;
+			case 1:
+				habServo.write(value);
+				break;
+			case 2:
+				glider1Servo.write(value);
+				break;
+			case 3:
+				glider2Servo.write(value);
+				break;
+		}
+
+	}
 	
 	void update() {
 	
-		if (dropArmed) {
+		if (dropArmed && !manualServo) {
 			if (autoDrop) {
 				
 			} else {

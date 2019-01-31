@@ -7,6 +7,9 @@ namespace SpecRFD900 {
 	unsigned long UpdateTimer = 0;
 	const unsigned long UpdatePeriod = 10;
 
+	long tLastRec = 0;
+	bool hasSignal = false;
+
 	int baudrate = 9600;
 	HardwareSerial *RFD900;
 	
@@ -32,6 +35,12 @@ namespace SpecRFD900 {
 			Drop::collectTarget = true;
 		} else {
 			Drop::collectTarget = false;
+		}
+
+		if (in & 0b01000000) {
+			hasSignal = true;
+		} else {
+			hasSignal = false;
 		}
 		
 		if (in & 0b00100000) {
@@ -76,10 +85,14 @@ namespace SpecRFD900 {
 	// to be called at a regular interval
 	void update() {
 		if (RFD900->available()) {
+			tLastRec = millis();
 			while (RFD900->available()) {
 				in = RFD900->read();
 			}
 			parse();
+		}
+		if(tLastRec > 1000){
+			in = 0;
 		}
 	}
 
