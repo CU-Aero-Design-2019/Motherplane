@@ -6,8 +6,8 @@
 
 #include "settings.h"
 #include <Servo.h>
+#include <JohnnyKalman.h>
 #include "constants.h"
-//#include <SimpleKalmanFilter.h>
 #include <SpecGPS.h>
 #include <SpecMPU6050.h>
 #include "SpecRFD900.h"
@@ -106,6 +106,10 @@ void loop() {
     SpecGPS::update();
 	
 	bmp.update();
+	
+	if (!JohnnyKalman::hasDoneSetup && SpecGPS.location.age() < 1000) {
+		JohnnyKalman::initial_kf_setup();
+	}
     
     if (millis() - SpecMPU6050::UpdateTimer > 1000 / SpecMPU6050::UpdatePeriod) {
         SpecMPU6050::update();
@@ -145,8 +149,8 @@ void loop() {
         telemetry += " ";
 
         // add altitude
-        telemetry += bmp.getKAlt();
-		//telemetry += bmp.readAvgOffsetAltitude();
+        //telemetry += bmp.getKAlt();
+		telemetry += bmp.readAvgOffsetAltitude();
         telemetry += " ";
 
         telemetry += millis()/100;
@@ -175,7 +179,7 @@ void loop() {
 			Serial.print(freeMemory(), DEC);
 			Serial.print(" ");
 		#endif
-		Serial.print(Prediction::bearing);
+		Serial.print(String(Prediction::bearing) + " ");
 		Serial.println(SpecRFD900::in, HEX);
     }
 

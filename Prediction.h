@@ -56,8 +56,8 @@
 		//update current LLA
 		curLLA.lat = SpecGPS::gps.location.lat();
 		curLLA.lng = SpecGPS::gps.location.lng();
-		//curLLA.alt = bmp.readAvgOffsetAltitude();
-		curLLA.alt = bmp.getKAlt();
+		curLLA.alt = bmp.readAvgOffsetAltitude();
+		//curLLA.alt = bmp.getKAlt();
 		
 		prevENU = curENU;
 		
