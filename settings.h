@@ -13,16 +13,14 @@ namespace Settings {
 	double targetAltitude;
 
 	// define a struct for storing the settings in EEPROM and instantiate one
-	struct SettingsStruct
-	{
+	struct SettingsStruct {
 		long saveTime;
 		double targetLongitude;
 		double targetLatitude;
 		double targetAltitude;
 	};
 
-	void saveSettings()
-	{
+	void saveSettings() {
 		// create object to be pushed to EEPROM
 		SettingsStruct toWrite;
 		// coords
@@ -40,8 +38,7 @@ namespace Settings {
 		//Serial.println("Saved Settings");
 	}
 
-	void loadSettings()
-	{
+	void loadSettings() {
 		SettingsStruct loaded;
 		for (int addressOffset = 0; addressOffset < sizeof(loaded); addressOffset++)
 		{

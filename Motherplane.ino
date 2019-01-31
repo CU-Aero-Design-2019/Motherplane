@@ -6,7 +6,6 @@
 
 #include "settings.h"
 #include <Servo.h>
-#include <JohnnyKalman.h>
 #include "constants.h"
 #include <SpecGPS.h>
 #include <SpecMPU6050.h>
@@ -29,6 +28,7 @@
 
 SpecBMP180 bmp;
 
+#include <JohnnyKalman.h>
 #include "Prediction.h"
 
 #ifdef RCIN
@@ -40,9 +40,6 @@ SpecBMP180 bmp;
 
 // String to write telemetry to which will be sent to ground station
 String telemetry;
-
-// SimpleKalmanFilter latFilter(0.000001, 0.000001, 0.01);
-// SimpleKalmanFilter lngFilter(0.000001, 0.000001, 0.01);
 
 #ifdef SDTELEMETRY
 	// String to write telemetry to which will be sent to SD card
@@ -107,7 +104,7 @@ void loop() {
 	
 	bmp.update();
 	
-	if (!JohnnyKalman::hasDoneSetup && SpecGPS.location.age() < 1000) {
+	if (!JohnnyKalman::hasDoneSetup && SpecGPS::gps.location.age() < 1000) {
 		JohnnyKalman::initial_kf_setup();
 	}
     
@@ -133,20 +130,11 @@ void loop() {
         // speed
         telemetry += SpecGPS::gps.speed.value();
         telemetry += " ";
-
-		// float lat = latFilter.updateEstimate(SpecGPS::gps.location.lat());
-		// float lng = lngFilter.updateEstimate(SpecGPS::gps.location.lng());
 		
-        // location
-        // telemetry += String(lat, 8);
-        // telemetry += " ";
-        // telemetry += String(lng, 8);;
-        // telemetry += " ";
-		
-		if (Drop::acquireTarget) {
-			telemetry += String(settings::targetLatitude, 8);
+		if (Drop::collectTarget) {
+			telemetry += String(Settings::targetLatitude, 8);
 	        telemetry += " ";
-	        telemetry += String(settings::targetLongitude, 8);;
+	        telemetry += String(Settings::targetLongitude, 8);;
 	        telemetry += " ";
 		} else {
 			telemetry += String(SpecGPS::gps.location.lat(), 8);
