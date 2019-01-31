@@ -56,7 +56,7 @@
 		//update current LLA
 		curLLA.lat = SpecGPS::gps.location.lat();
 		curLLA.lng = SpecGPS::gps.location.lng();
-		curLLA.alt = bmp.readAvgOffsetAltitude();
+		//curLLA.alt = bmp.readAvgOffsetAltitude();
 		//curLLA.alt = bmp.getKAlt();
 		
 		prevENU = curENU;
@@ -68,7 +68,7 @@
 	
 	SpecGPS::ENU makePrediction(float uAirGround, float uAirPlane, float vAirGround, float vAirPlane, float packageMass) {
 		
-		float speed = SpecGPS::gps.speed.mps() / 10;
+		float speed = SpecGPS::gps.speed.mps();
 		bearing = SpecGPS::bearing(prevLLA.lat, prevLLA.lng, curLLA.lat, curLLA.lng);
 		
 		// find velocity from speed and bearing

@@ -28,7 +28,7 @@
 
 SpecBMP180 bmp;
 
-#include <JohnnyKalman.h>
+//#include <JohnnyKalman.h>
 #include "Prediction.h"
 
 #ifdef RCIN
@@ -106,20 +106,20 @@ void loop() {
 	
 	bmp.update();
 	
-	if ((!JohnnyKalman::hasDoneSetup) && SpecGPS::gps.satellites.value() > 2) {
-		// get saved target coords for reference point
-		SpecGPS::LLA targetLLA;
-		targetLLA.lat = Settings::targetLatitude;
-		targetLLA.lng = Settings::targetLongitude;
-		targetLLA.alt = Settings::targetAltitude;
+	// if ((!JohnnyKalman::hasDoneSetup) && SpecGPS::gps.satellites.value() > 2) {
+		// // get saved target coords for reference point
+		// SpecGPS::LLA targetLLA;
+		// targetLLA.lat = Settings::targetLatitude;
+		// targetLLA.lng = Settings::targetLongitude;
+		// targetLLA.alt = Settings::targetAltitude;
 		
-		JohnnyKalman::initial_kf_setup(targetLLA);
-	}
-	if (JohnnyKalman::hasDoneSetup && JohnnyKalman::nextTime < millis()) {
-		JohnnyKalman::kalman_update();
+		// JohnnyKalman::initial_kf_setup(targetLLA);
+	// }
+	// if (JohnnyKalman::hasDoneSetup && JohnnyKalman::nextTime < millis()) {
+		// JohnnyKalman::kalman_update();
 		
-		JohnnyKalman::nextTime = millis() + 100;
-	}
+		// JohnnyKalman::nextTime = millis() + 100;
+	// }
     
     if (millis() - SpecMPU6050::UpdateTimer > 1000 / SpecMPU6050::UpdatePeriod) {
         SpecMPU6050::update();
@@ -151,20 +151,20 @@ void loop() {
 	        telemetry += String(Settings::targetLongitude, 8);;
 	        telemetry += " ";
 		} else {
-			// telemetry += String(SpecGPS::gps.location.lat(), 8);
-	        // telemetry += " ";
-	        // telemetry += String(SpecGPS::gps.location.lng(), 8);;
-	        // telemetry += " ";
-			telemetry += String(JohnnyKalman::filter_output.x_pos, 8);
+			telemetry += String(SpecGPS::gps.location.lat(), 8);
 	        telemetry += " ";
-	        telemetry += String(JohnnyKalman::filter_output.y_pos, 8);
+	        telemetry += String(SpecGPS::gps.location.lng(), 8);;
 	        telemetry += " ";
+			// telemetry += String(JohnnyKalman::filter_output.x_pos, 8);
+	        // telemetry += " ";
+	        // telemetry += String(JohnnyKalman::filter_output.y_pos, 8);
+	        // telemetry += " ";
 	    }
 
         // add altitude
-        //telemetry += bmp.getKAlt();
+        telemetry += bmp.getKAlt();
 		//telemetry += bmp.readAvgOffsetAltitude();
-		telemetry += JohnnyKalman::filter_output.z_pos;
+		//telemetry += JohnnyKalman::filter_output.z_pos;
         telemetry += " ";
 
         telemetry += millis()/100;
@@ -210,7 +210,7 @@ void loop() {
         sdt += " ";
 		sdt += String(SpecGPS::gps.speed.mps(), 2); // m/s
         sdt += " ";
-		//sdt += String(bmp.readOffsetAltitude(), 2); // m
+		sdt += String(bmp.getKAlt(), 2); // m
         sdt += " ";
 		sdt += String(SpecMPU6050::angleAccX, 9); // deg
         sdt += " ";
