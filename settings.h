@@ -15,8 +15,8 @@ namespace Settings {
 	// define a struct for storing the settings in EEPROM and instantiate one
 	struct SettingsStruct {
 		long saveTime;
-		double targetLongitude;
 		double targetLatitude;
+		double targetLongitude;
 		double targetAltitude;
 	};
 
@@ -24,8 +24,8 @@ namespace Settings {
 		// create object to be pushed to EEPROM
 		SettingsStruct toWrite;
 		// coords
-		toWrite.targetLongitude = targetLongitude;
 		toWrite.targetLatitude = targetLatitude;
+		toWrite.targetLongitude = targetLongitude;
 		toWrite.targetAltitude = targetAltitude;
 		// record time
 		toWrite.saveTime = millis();
@@ -45,7 +45,7 @@ namespace Settings {
 			*((char *)&loaded + addressOffset) = EEPROM.read(StartAddress + addressOffset);
 		}
 		
-		if (loaded.targetLongitude == 0.0) {
+		if (loaded.targetLatitude < 1) {
 			loaded.targetLatitude = 39.747834;
 			loaded.targetLongitude = -83.812673;
 			loaded.targetAltitude = 0.0;

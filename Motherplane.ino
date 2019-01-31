@@ -52,6 +52,8 @@ String telemetry;
 
 void setup() {
 	
+	delay(2000);
+	
     // GPS setup
     SpecGPS::setup();
 	
@@ -104,8 +106,19 @@ void loop() {
 	
 	bmp.update();
 	
-	if (!JohnnyKalman::hasDoneSetup && SpecGPS::gps.location.age() < 1000) {
-		JohnnyKalman::initial_kf_setup();
+	if ((!JohnnyKalman::hasDoneSetup) && SpecGPS::gps.satellites.value() > 2) {
+		// get saved target coords for reference point
+		SpecGPS::LLA targetLLA;
+		targetLLA.lat = Settings::targetLatitude;
+		targetLLA.lng = Settings::targetLongitude;
+		targetLLA.alt = Settings::targetAltitude;
+		
+		JohnnyKalman::initial_kf_setup(targetLLA);
+	}
+	if (JohnnyKalman::hasDoneSetup && JohnnyKalman::nextTime < millis()) {
+		JohnnyKalman::kalman_update();
+		
+		JohnnyKalman::nextTime = millis() + 100;
 	}
     
     if (millis() - SpecMPU6050::UpdateTimer > 1000 / SpecMPU6050::UpdatePeriod) {
@@ -132,20 +145,26 @@ void loop() {
         telemetry += " ";
 		
 		if (Drop::collectTarget) {
+			Serial.println("Collecting Target");
 			telemetry += String(Settings::targetLatitude, 8);
 	        telemetry += " ";
 	        telemetry += String(Settings::targetLongitude, 8);;
 	        telemetry += " ";
 		} else {
-			telemetry += String(SpecGPS::gps.location.lat(), 8);
+			// telemetry += String(SpecGPS::gps.location.lat(), 8);
+	        // telemetry += " ";
+	        // telemetry += String(SpecGPS::gps.location.lng(), 8);;
+	        // telemetry += " ";
+			telemetry += String(JohnnyKalman::filter_output.x_pos, 8);
 	        telemetry += " ";
-	        telemetry += String(SpecGPS::gps.location.lng(), 8);;
+	        telemetry += String(JohnnyKalman::filter_output.y_pos, 8);
 	        telemetry += " ";
 	    }
 
         // add altitude
         //telemetry += bmp.getKAlt();
-		telemetry += bmp.readAvgOffsetAltitude();
+		//telemetry += bmp.readAvgOffsetAltitude();
+		telemetry += JohnnyKalman::filter_output.z_pos;
         telemetry += " ";
 
         telemetry += millis()/100;
@@ -175,6 +194,7 @@ void loop() {
 			Serial.print(" ");
 		#endif
 		Serial.print(String(Prediction::bearing) + " ");
+		Serial.print(String(SpecGPS::gps.satellites.value()) + " ");
 		Serial.println(SpecRFD900::in, HEX);
     }
 
@@ -190,7 +210,7 @@ void loop() {
         sdt += " ";
 		sdt += String(SpecGPS::gps.speed.mps(), 2); // m/s
         sdt += " ";
-		sdt += String(bmp.readOffsetAltitude(), 2); // m
+		//sdt += String(bmp.readOffsetAltitude(), 2); // m
         sdt += " ";
 		sdt += String(SpecMPU6050::angleAccX, 9); // deg
         sdt += " ";
@@ -215,9 +235,9 @@ void loop() {
 	#ifdef LOOPTRACKER
 	// to test how long it takes to run the loop
 	long loopTime = millis() - startTime;
-	if(loopTime > 4) {
+	//if(loopTime > 4) {
 		Serial.println("Total Time: " + String(loopTime));
-	}
+	//}
 	#endif
 
 }
