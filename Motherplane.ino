@@ -1,6 +1,6 @@
 // Main file for SAE aero design 2019 motherplane
 
-//#define SDTELEMETRY
+#define SDTELEMETRY
 //#define RCIN
 //#define LOOPTRACKER
 
@@ -151,10 +151,23 @@ void loop() {
 	        telemetry += String(Settings::targetLongitude, 8);;
 	        telemetry += " ";
 		} else {
-			telemetry += String(SpecGPS::gps.location.lat(), 8);
-	        telemetry += " ";
-	        telemetry += String(SpecGPS::gps.location.lng(), 8);;
-	        telemetry += " ";
+			// telemetry += String(SpecGPS::gps.location.lat(), 8);
+	        // telemetry += " ";
+	        // telemetry += String(SpecGPS::gps.location.lng(), 8);;
+	        // telemetry += " ";
+			
+			SpecGPS::LLA currentLLA;
+			currentLLA.lat = SpecGPS::gps.location.lat();
+			currentLLA.lng = SpecGPS::gps.location.lng();
+			SpecGPS::LLA targetLLA;
+			targetLLA.lat = Settings::targetLatitude;
+			targetLLA.lng = Settings::targetLongitude;
+			targetLLA.alt = 0;
+			SpecGPS::ENU currentENU;
+			SpecGPS::lla_to_enu(currentLLA, targetLLA, currentENU);
+			telemetry += String(currentENU.e, 1) + " ";
+			telemetry += String(currentENU.n, 1) + " ";
+			
 			// telemetry += String(JohnnyKalman::filter_output.x_pos, 8);
 	        // telemetry += " ";
 	        // telemetry += String(JohnnyKalman::filter_output.y_pos, 8);
@@ -212,21 +225,13 @@ void loop() {
         sdt += " ";
 		sdt += String(bmp.getKAlt(), 2); // m
         sdt += " ";
-		sdt += String(SpecMPU6050::angleAccX, 9); // deg
-        sdt += " ";
-		sdt += String(SpecMPU6050::angleAccY, 9);
-        sdt += " ";
-		sdt += String(SpecMPU6050::angleGyroX, 9); // deg/s
-        sdt += " ";
-		sdt += String(SpecMPU6050::angleGyroY, 9);
-        sdt += " ";
-		sdt += String(SpecMPU6050::angleGyroZ, 9);
-		sdt += " ";
 		sdt += String(SpecGPS::gps.time.minute());
 		sdt += " ";
 		sdt += String(SpecGPS::gps.time.second());
 		sdt += " ";
 		sdt += String(SpecGPS::gps.time.centisecond());
+		sdt += " ";
+		sdt += String(millis() / 1000, 2);
         sdt += String("\n");
 		SpecSD::writeTelemetry(sdt);
     }
