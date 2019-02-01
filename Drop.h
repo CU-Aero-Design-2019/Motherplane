@@ -20,17 +20,17 @@ namespace Drop {
 	bool droppedWater = false;
 	byte sendBack = 0;
 	
-	int waterUndropped = 45;
-	int waterDropped = 135;
+	int waterUndropped = 70;
+	int waterDropped = 115;
 	
 	int habsUndropped = 5;
 	int habsDropped = 150;
 	
-	int glider1Undropped = 45;
-	int glider1Dropped = 135;
+	int glider1Undropped = 70;
+	int glider1Dropped = 110;
 	
-	int glider2Undropped = 45;
-	int glider2Dropped = 135;
+	int glider2Undropped = 70;
+	int glider2Dropped = 110;
 	
 	double latSum = 0.0;
 	double lngSum = 0.0;

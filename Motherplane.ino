@@ -106,7 +106,7 @@ void loop() {
 	
 	bmp.update();
 	
-	if ((!JohnnyKalman::hasDoneSetup) && SpecGPS::gps.satellites.value() > 2) {
+	if ((!JohnnyKalman::hasDoneSetup) && SpecGPS::gps.location.age() < 2000) {
 		// get saved target coords for reference point
 		SpecGPS::LLA targetLLA;
 		targetLLA.lat = Settings::targetLatitude;
