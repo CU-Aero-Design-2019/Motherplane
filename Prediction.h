@@ -24,7 +24,7 @@
 	
 	SpecGPS::ENU prediction;
 
-	float bearing;
+	uint16_t bearing;
 	
 	const float tDel = 0.01;
 	const float dragVert = 0.01;

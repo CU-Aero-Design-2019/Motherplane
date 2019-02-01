@@ -191,6 +191,9 @@ void loop() {
 		
 		telemetry += String(Drop::sendBack, HEX);
         telemetry += " ";
+		
+		telemetry += Prediction::bearing;
+		telemetry += " ";
 				
 		#ifdef RCIN
 			// RC throttle
