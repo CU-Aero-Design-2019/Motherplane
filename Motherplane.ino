@@ -1,6 +1,6 @@
 // Main file for SAE aero design 2019 motherplane
 
-#define SDTELEMETRY
+//#define SDTELEMETRY
 //#define RCIN
 //#define LOOPTRACKER
 
@@ -126,10 +126,10 @@ void loop() {
         SpecMPU6050::UpdateTimer = millis();
     }
 
-	if (millis() - Prediction::UpdateTimer > 1000 / Prediction::UpdatePeriod) {
-        Prediction::update();
-        Prediction::UpdateTimer = millis();
-    }
+	// if (millis() - Prediction::UpdateTimer > 1000 / Prediction::UpdatePeriod) {
+        // Prediction::update();
+        // Prediction::UpdateTimer = millis();
+    // }
 
     if (millis() - SpecRFD900::UpdateTimer > 1000 / SpecRFD900::UpdatePeriod) {
         SpecRFD900::UpdateTimer = millis();
@@ -183,10 +183,12 @@ void loop() {
         telemetry += millis()/100;
         telemetry += " ";
 		
-		telemetry += String(Prediction::prediction.e, 1);
+		Prediction::update();
+		
+		telemetry += String(Prediction::watPrediction.e, 1);
         telemetry += " ";
 		
-		telemetry += String(Prediction::prediction.n, 1);
+		telemetry += String(Prediction::watPrediction.n, 1);
         telemetry += " ";
 		
 		telemetry += String(Drop::sendBack, HEX);

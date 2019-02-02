@@ -4,7 +4,7 @@
 #include <EEPROM.h>
 
 namespace Settings {
-	const int StartAddress = 3200;
+	const int StartAddress = 3000;
 	const int varSize = 20;
 
 	// vars in memory
@@ -45,7 +45,7 @@ namespace Settings {
 			*((char *)&loaded + addressOffset) = EEPROM.read(StartAddress + addressOffset);
 		}
 		
-		if (loaded.targetLatitude < 1) {
+		if (loaded.targetLatitude < 1 || isnan(loaded.targetLatitude)) {
 			loaded.targetLatitude = 39.747834;
 			loaded.targetLongitude = -83.812673;
 			loaded.targetAltitude = 0.0;
