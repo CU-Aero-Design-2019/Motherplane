@@ -22,7 +22,8 @@
 	SpecGPS::ECEF tarECEF;
 	SpecGPS::LLA tarLLA;
 	
-	SpecGPS::ENU prediction;
+	SpecGPS::ENU habPrediction;
+	SpecGPS::ENU watPrediction;
 
 	uint16_t bearing;
 	
@@ -31,7 +32,7 @@
 	const float dragHorz = 0.01;
 	
 	// prototype
-	SpecGPS::ENU makePrediction(float uAirGround = 0, float uAirPlane = 0, float vAirGround = 0, float vAirPlane = 0, float packageMass = 2);
+	SpecGPS::ENU makePrediction(float packageMass, bool habitat);
  
 	void setup() {
 		
@@ -63,31 +64,48 @@
 		
 		SpecGPS::lla_to_enu(curLLA, tarLLA, tarECEF, curENU);
 		
-		makePrediction();
+		habPrediction = makePrediction(0.12856509, true);
+		watPrediction = makePrediction(0.50121957, false);
 	}
 	
-	SpecGPS::ENU makePrediction(float uAirGround, float uAirPlane, float vAirGround, float vAirPlane, float packageMass) {
+	SpecGPS::ENU makePrediction(float packageMass, bool habitat) {
 		
 		float speed = SpecGPS::gps.speed.mps();
-		bearing = SpecGPS::bearing(prevLLA.lat, prevLLA.lng, curLLA.lat, curLLA.lng);
-		
-		// find velocity from speed and bearing
-		float uIni = speed * cos(bearing * 180 / 3.14159265);
-		float vIni = speed * sin(bearing * 180 / 3.14159265);
-		float wIni = 0;
+		//bearing = SpecGPS::bearing(prevLLA.lat, prevLLA.lng, curLLA.lat, curLLA.lng);
+		bearing = SpecGPS::gps.course.deg();
 		
 		float x = curENU.e;
         float y = curENU.n;
         float z = curENU.u;
 		
-        float u = uIni;
-        float v = vIni;
-        float w = wIni;
+		// find initial velocity from speed and bearing
+        float u = speed * cos(bearing * 180 / 3.14159265);
+        float v = speed * sin(bearing * 180 / 3.14159265);
+        float w = 0;
 		
 		float groundAirSpeedOffset = 2;
 		
-		float uAir = (((z-groundAirSpeedOffset)*(uAirPlane - uAirGround))/(z-groundAirSpeedOffset)) + uAirGround;
-		float vAir = (((z-groundAirSpeedOffset)*(vAirPlane - vAirGround))/(z-groundAirSpeedOffset)) + vAirGround;
+		// float uAir = (((z-groundAirSpeedOffset)*(uAirPlane - uAirGround))/(z-groundAirSpeedOffset)) + uAirGround;
+		// float vAir = (((z-groundAirSpeedOffset)*(vAirPlane - vAirGround))/(z-groundAirSpeedOffset)) + vAirGround;
+		float uAir = 0;
+		float vAir = 0;
+		
+		float dragVert; // new
+		float dragHorz; // new
+		float Lift; // new
+		// true - habitat, false - water bottles
+		// new
+		if (habitat == true) {
+			Lift = 0;
+			dragVert = 0.764;;
+			dragHorz = 0.139;
+		}
+		// new
+		if (habitat == false) {
+			Lift = 5;//?
+			dragVert = 1.5;//?
+			dragHorz = 1.7;//?
+		}
 		
 		float ax = -(dragHorz/packageMass)*(u-uAir)*abs(u-uAir);
         float ay = -(dragHorz/packageMass)*(v-vAir)*abs(v-vAir);
@@ -109,9 +127,13 @@
             az = -9.807 -(dragVert/packageMass)*(w)*abs(w);
         }
 		
+		SpecGPS::ENU prediction;
+		
 		prediction.e = x;
 		prediction.n = y;
 		prediction.u = z;
+		
+		return prediction;
 		
 		// Serial.println("E: " + String(prediction.e, 9));
 		// Serial.println("N: " + String(prediction.n, 9));
