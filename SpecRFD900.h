@@ -68,9 +68,11 @@ namespace SpecRFD900 {
 		}
 		
 		if (in & 0b00000010) {
-			Drop::dropHabs = true;
+			Drop::dropLHabs = true;
+			Drop::dropRHabs = true;
 		} else {
-			Drop::dropHabs = false;
+			Drop::dropLHabs = false;
+			Drop::dropRHabs = false;
 		}
 		
 		if (in & 0b00000001) {

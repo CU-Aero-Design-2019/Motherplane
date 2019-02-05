@@ -1,6 +1,6 @@
 // Main file for SAE aero design 2019 motherplane
 
-#define SDTELEMETRY
+//#define SDTELEMETRY
 //#define RCIN
 //#define LOOPTRACKER
 
@@ -67,15 +67,21 @@ void setup() {
 		USB::setup();
 	#endif
 
+	Serial.println("starting BMP");
+
     // IMU setup
-    SpecMPU6050::setup();
+    //SpecMPU6050::setup();
 			
 	// bmp.begin() delays for about (35 * int)ms
 	if (!bmp.begin(50)) {
         Serial.println("Could not find a valid BMP085 sensor");
     }
+
+    Serial.println("finished BMP");
     
     SpecRFD900::setup(&Serial3);
+
+    Serial.println("Finished RFD");
 	
 	// load settings from EEPROM
     Settings::loadSettings();
@@ -85,6 +91,8 @@ void setup() {
 	#ifdef SDTELEMETRY
 		SpecSD::setup("test");
 	#endif
+
+	Serial.println("end setup");
 }
 
 void loop() {
@@ -121,10 +129,10 @@ void loop() {
 		// JohnnyKalman::nextTime = millis() + 100;
 	// }
     
-    if (millis() - SpecMPU6050::UpdateTimer > 1000 / SpecMPU6050::UpdatePeriod) {
-        SpecMPU6050::update();
-        SpecMPU6050::UpdateTimer = millis();
-    }
+    // if (millis() - SpecMPU6050::UpdateTimer > 1000 / SpecMPU6050::UpdatePeriod) {
+    //     SpecMPU6050::update();
+    //     SpecMPU6050::UpdateTimer = millis();
+    // }
 
 	if (millis() - Prediction::UpdateTimer > 1000 / Prediction::UpdatePeriod) {
         Prediction::update();
@@ -145,10 +153,10 @@ void loop() {
         telemetry += " ";
 		
 		if (Drop::collectTarget) {
-			Serial.println("Collecting Target");
-			telemetry += String(Settings::targetLatitude, 8);
+			//Serial.println("Collecting Target");
+			telemetry += String(Settings::targetLatitude, 1);
 	        telemetry += " ";
-	        telemetry += String(Settings::targetLongitude, 8);;
+	        telemetry += String(Settings::targetLongitude, 1);
 	        telemetry += " ";
 		} else {
 			// telemetry += String(SpecGPS::gps.location.lat(), 8);
@@ -165,9 +173,12 @@ void loop() {
 			targetLLA.alt = 0;
 			SpecGPS::ENU currentENU;
 			SpecGPS::lla_to_enu(currentLLA, targetLLA, currentENU);
-			telemetry += String(currentENU.e, 1) + " ";
-			telemetry += String(currentENU.n, 1) + " ";
-			
+
+			telemetry += String(currentENU.e, 1);
+			telemetry += " ";
+			telemetry += String(currentENU.n, 1);
+			telemetry += " ";
+
 			// telemetry += String(JohnnyKalman::filter_output.x_pos, 8);
 	        // telemetry += " ";
 	        // telemetry += String(JohnnyKalman::filter_output.y_pos, 8);

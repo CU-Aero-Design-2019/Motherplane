@@ -11,26 +11,36 @@ namespace Drop {
 	bool autoDrop = false;
 	bool dropGlider1 = false;
 	bool dropGlider2 = false;
-	bool dropHabs = false;
+	bool dropLHabs = false;
+	bool dropRHabs = false;
 	bool dropWater = false;
 	
 	bool droppedGlider1 = false;
 	bool droppedGlider2 = false;
-	bool droppedHabs = false;
+	bool droppedLHabs = false;
+	bool droppedRHabs = false;
 	bool droppedWater = false;
 	byte sendBack = 0;
 	
+	//srvo 0 
 	int waterUndropped = 70;
 	int waterDropped = 115;
 	
-	int habsUndropped = 5;
-	int habsDropped = 150;
+	//srvo 1 
+	int habsLUndropped = 50;
+	int habsLDropped = 150;
+
+	//srvo 2 
+	int habsRUndropped = 50;
+	int habsRDropped = 150;
 	
-	int glider1Undropped = 70;
-	int glider1Dropped = 110;
+	//srvo 3 
+	int glider1Undropped = 0;
+	int glider1Dropped = 130;
 	
-	int glider2Undropped = 70;
-	int glider2Dropped = 110;
+	//srvo 4 
+	int glider2Undropped = 130;
+	int glider2Dropped = 0;
 	
 	double latSum = 0.0;
 	double lngSum = 0.0;
@@ -41,18 +51,21 @@ namespace Drop {
 	bool manualServo = false;
 	
 	Servo waterServo;
-	Servo habServo;
+	Servo habLServo;
+	Servo habRServo;
 	Servo glider1Servo;
 	Servo glider2Servo;
 	
 	void setup() {
 		waterServo.attach(PA0);
-		habServo.attach(PA1);
+		habLServo.attach(PA1);
+		habRServo.attach(PB9);
 		glider1Servo.attach(PA8);
 		glider2Servo.attach(PB1);
 		
 		waterServo.write(waterUndropped);
-		habServo.write(habsUndropped);
+		habLServo.write(habsLUndropped);
+		habRServo.write(habsRUndropped);
 		glider1Servo.write(glider1Undropped);
 		glider2Servo.write(glider2Undropped);
 	}
@@ -66,12 +79,15 @@ namespace Drop {
 				waterServo.write(value);
 				break;
 			case 1:
-				habServo.write(value);
+				habLServo.write(value);
 				break;
 			case 2:
-				glider1Servo.write(value);
+				habRServo.write(value);
 				break;
 			case 3:
+				glider1Servo.write(value);
+				break;
+			case 4:
 				glider2Servo.write(value);
 				break;
 		}
@@ -91,12 +107,19 @@ namespace Drop {
 					waterServo.write(waterUndropped);
 					droppedWater = false;
 				}
-				if (dropHabs) {
-					habServo.write(habsDropped);
-					droppedHabs = true;
+				if (dropLHabs) {
+					habLServo.write(habsLDropped);
+					droppedLHabs = true;
 				} else {
-					habServo.write(habsUndropped);
-					droppedHabs = false;
+					habLServo.write(habsLUndropped);
+					droppedLHabs = false;
+				}
+				if (dropRHabs) {
+					habRServo.write(habsRDropped);
+					droppedRHabs = true;
+				} else {
+					habLServo.write(habsRUndropped);
+					droppedRHabs = false;
 				}
 				if (dropGlider1) {
 					glider1Servo.write(glider1Dropped);
@@ -153,7 +176,7 @@ namespace Drop {
 		if (droppedGlider2) {
 			sendBack |= 0b00000100;
 		}
-		if (droppedHabs) {
+		if (droppedLHabs) {
 			sendBack |= 0b00000010;
 		}
 		if (droppedWater) {
