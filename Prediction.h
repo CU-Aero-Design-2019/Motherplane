@@ -10,6 +10,10 @@
 	unsigned long UpdateTimer = 0;
     const unsigned long UpdatePeriod = 100;
 	
+	float fakeLat = 39.747996;
+	float fakeLng = -83.816356;
+	float fakeSpeed = 16.0;
+	
 	// get current coords
 	SpecGPS::ENU curENU;
 	SpecGPS::LLA curLLA;
@@ -71,8 +75,10 @@
 	SpecGPS::ENU makePrediction(float packageMass, bool habitat) {
 		
 		float speed = SpecGPS::gps.speed.mps();
+		//float speed = fakeSpeed;
 		//bearing = SpecGPS::bearing(prevLLA.lat, prevLLA.lng, curLLA.lat, curLLA.lng);
 		bearing = SpecGPS::gps.course.deg();
+		//bearing = 90;
 		
 		float x = curENU.e;
         float y = curENU.n;
@@ -92,24 +98,22 @@
 		
 		float dragVert; // new
 		float dragHorz; // new
-		float Lift; // new
+		float liftConst; // new
 		// true - habitat, false - water bottles
 		// new
 		if (habitat == true) {
-			Lift = 0;
+			liftConst = 0;
 			dragVert = 0.764;;
 			dragHorz = 0.139;
-		}
-		// new
-		if (habitat == false) {
-			Lift = 5;//?
-			dragVert = 1.5;//?
-			dragHorz = 1.7;//?
+		} else {
+			liftConst = 0.128;//?
+			dragVert = 1.05;//?
+			dragHorz = 1.5;//?
 		}
 		
 		float ax = -(dragHorz/packageMass)*(u-uAir)*abs(u-uAir);
         float ay = -(dragHorz/packageMass)*(v-vAir)*abs(v-vAir);
-        float az = -9.807 -(dragVert/packageMass)*(w)*abs(w);
+        float az = -9.807 +(dragVert/packageMass)*(w)*abs(w);
 		
 		int count = 0;
         while (z > 0){
@@ -124,7 +128,7 @@
             
             ax = -(dragHorz/packageMass)*(u-uAir)*abs(u-uAir);
             ay = -(dragHorz/packageMass)*(v-vAir)*abs(v-vAir);
-            az = -9.807 -(dragVert/packageMass)*(w)*abs(w);
+            az = -9.807 +(dragVert/packageMass)*(w)*abs(w) + liftConst * (abs(w) * abs(w));
         }
 		
 		SpecGPS::ENU prediction;

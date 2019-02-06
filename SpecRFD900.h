@@ -39,6 +39,13 @@ namespace SpecRFD900 {
 			in[0] = RFD900->read();
 			in[1] = RFD900->read();
 			
+			// swap things if needed
+			if (in[0] & 0b10000000) {
+				byte temp = in[0];
+				in[0] = in[1];
+				in[1] = temp;
+			}
+			
 			if (in[0] == 0) {
 				Serial.println("No ground telem");
 			}
