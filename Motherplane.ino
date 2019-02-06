@@ -28,7 +28,7 @@
 
 SpecBMP180 bmp;
 
-//#include <JohnnyKalman.h>
+#include <JohnnyKalman.h>
 #include "Prediction.h"
 
 #ifdef RCIN
@@ -114,20 +114,20 @@ void loop() {
 	
 	bmp.update();
 	
-	// if ((!JohnnyKalman::hasDoneSetup) && SpecGPS::gps.satellites.value() > 2) {
-		// // get saved target coords for reference point
-		// SpecGPS::LLA targetLLA;
-		// targetLLA.lat = Settings::targetLatitude;
-		// targetLLA.lng = Settings::targetLongitude;
-		// targetLLA.alt = Settings::targetAltitude;
+	if ((!JohnnyKalman::hasDoneSetup) /*&& SpecGPS::gps.satellites.value() > 2*/) {
+		// get saved target coords for reference point
+		SpecGPS::LLA targetLLA;
+		targetLLA.lat = Settings::targetLatitude;
+		targetLLA.lng = Settings::targetLongitude;
+		targetLLA.alt = Settings::targetAltitude;
 		
-		// JohnnyKalman::initial_kf_setup(targetLLA);
-	// }
-	// if (JohnnyKalman::hasDoneSetup && JohnnyKalman::nextTime < millis()) {
-		// JohnnyKalman::kalman_update();
+		JohnnyKalman::initial_kf_setup(targetLLA);
+	}
+	if (JohnnyKalman::hasDoneSetup && JohnnyKalman::nextTime < millis()) {
+		JohnnyKalman::kalman_update();
 		
-		// JohnnyKalman::nextTime = millis() + 100;
-	// }
+		JohnnyKalman::nextTime = millis() + 100;
+	}
     
     // if (millis() - SpecMPU6050::UpdateTimer > 1000 / SpecMPU6050::UpdatePeriod) {
     //     SpecMPU6050::update();
@@ -174,21 +174,21 @@ void loop() {
 			SpecGPS::ENU currentENU;
 			SpecGPS::lla_to_enu(currentLLA, targetLLA, currentENU);
 
-			telemetry += String(currentENU.e, 1);
-			telemetry += " ";
-			telemetry += String(currentENU.n, 1);
-			telemetry += " ";
+			// telemetry += String(currentENU.e, 1);
+			// telemetry += " ";
+			// telemetry += String(currentENU.n, 1);
+			// telemetry += " ";
 
-			// telemetry += String(JohnnyKalman::filter_output.x_pos, 8);
-	        // telemetry += " ";
-	        // telemetry += String(JohnnyKalman::filter_output.y_pos, 8);
-	        // telemetry += " ";
+			telemetry += String(JohnnyKalman::filter_output.x_pos, 8);
+	        telemetry += " ";
+	        telemetry += String(JohnnyKalman::filter_output.y_pos, 8);
+	        telemetry += " ";
 	    }
 
         // add altitude
-        telemetry += bmp.getKAlt();
+        //telemetry += bmp.getKAlt();
 		//telemetry += bmp.readAvgOffsetAltitude();
-		//telemetry += JohnnyKalman::filter_output.z_pos;
+		telemetry += JohnnyKalman::filter_output.z_pos;
         telemetry += " ";
 
         telemetry += millis()/100;
