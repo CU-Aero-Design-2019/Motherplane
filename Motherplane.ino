@@ -3,6 +3,7 @@
 //#define SDTELEMETRY
 //#define RCIN
 //#define LOOPTRACKER
+//#define HASBMP
 
 #include "settings.h"
 #include <Servo.h>
@@ -67,21 +68,17 @@ void setup() {
 		USB::setup();
 	#endif
 
-	Serial.println("starting BMP");
-
     // IMU setup
     //SpecMPU6050::setup();
 			
+	#ifdef HASBMP
 	// bmp.begin() delays for about (35 * int)ms
 	if (!bmp.begin(50)) {
         Serial.println("Could not find a valid BMP085 sensor");
     }
-
-    Serial.println("finished BMP");
+	#endif
     
     SpecRFD900::setup(&Serial3);
-
-    Serial.println("Finished RFD");
 	
 	// load settings from EEPROM
     Settings::loadSettings();
@@ -112,9 +109,11 @@ void loop() {
     // needs to be constantly updated
     SpecGPS::update();
 	
+	#ifdef HASBMP
 	bmp.update();
+	#endif
 	
-	if ((!JohnnyKalman::hasDoneSetup) /*&& SpecGPS::gps.satellites.value() > 2*/) {
+	if ((!JohnnyKalman::hasDoneSetup) && SpecGPS::gps.satellites.value() > 3) {
 		// get saved target coords for reference point
 		SpecGPS::LLA targetLLA;
 		targetLLA.lat = Settings::targetLatitude;
@@ -179,9 +178,9 @@ void loop() {
 			// telemetry += String(currentENU.n, 1);
 			// telemetry += " ";
 
-			telemetry += String(JohnnyKalman::filter_output.x_pos, 8);
+			telemetry += String(JohnnyKalman::filter_output.x_pos, 2);
 	        telemetry += " ";
-	        telemetry += String(JohnnyKalman::filter_output.y_pos, 8);
+	        telemetry += String(JohnnyKalman::filter_output.y_pos, 2);
 	        telemetry += " ";
 	    }
 
@@ -196,10 +195,10 @@ void loop() {
 		
 		Prediction::update();
 		
-		telemetry += String(Prediction::watPrediction.e, 1);
+		telemetry += String(Prediction::watPrediction.e, 2);
         telemetry += " ";
 		
-		telemetry += String(Prediction::watPrediction.n, 1);
+		telemetry += String(Prediction::watPrediction.n, 2);
         telemetry += " ";
 		
 		telemetry += String(Drop::sendBack, HEX);
@@ -222,9 +221,15 @@ void loop() {
 			Serial.print(freeMemory(), DEC);
 			Serial.print(" ");
 		#endif
-		Serial.print(String(Prediction::bearing) + " ");
 		Serial.print(String(SpecGPS::gps.satellites.value()) + " ");
 		Serial.println(SpecRFD900::in[0], HEX);
+		// Serial.print("time: "); Serial.println(SpecGPS::gps.time.value());
+		// Serial.print("nSats: "); Serial.println(SpecGPS::gps.satellites.value());
+		// Serial.print("posAge: "); Serial.println(SpecGPS::gps.location.age());
+		// Serial.print("posValid: "); Serial.println(SpecGPS::gps.location.isValid());
+		// Serial.print("lat: "); Serial.println(SpecGPS::gps.location.lat());
+		// Serial.print("lng: "); Serial.println(SpecGPS::gps.location.lng());
+		// Serial.print("alt: "); Serial.println(SpecGPS::gps.altitude.meters());
     }
 
 	#ifdef SDTELEMETRY
