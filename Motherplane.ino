@@ -149,7 +149,7 @@ void loop() {
         telemetry += " ";
 
         // speed
-        telemetry += SpecGPS::gps.speed.value();
+        telemetry += SpecGPS::gps.speed.mph();
         telemetry += " ";
 		
 		if (Drop::collectTarget) {
@@ -224,7 +224,7 @@ void loop() {
 		#endif
 		Serial.print(String(Prediction::bearing) + " ");
 		Serial.print(String(SpecGPS::gps.satellites.value()) + " ");
-		Serial.println(SpecRFD900::in, HEX);
+		Serial.println(SpecRFD900::in[0], HEX);
     }
 
 	#ifdef SDTELEMETRY
