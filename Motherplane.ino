@@ -113,18 +113,20 @@ void loop() {
 	bmp.update();
 	#endif
 	
-	if ((!JohnnyKalman::hasDoneSetup) && SpecGPS::gps.satellites.value() > 3) {
+	if ((!JohnnyKalman::hasDoneSetup) && SpecGPS::gps.satellites.value() > 3 && SpecGPS::baselineAlt > 1) {
 		// get saved target coords for reference point
+		//Serial.println("Starting Kalman Setup");
 		SpecGPS::LLA targetLLA;
 		targetLLA.lat = Settings::targetLatitude;
 		targetLLA.lng = Settings::targetLongitude;
 		targetLLA.alt = Settings::targetAltitude;
 		
 		JohnnyKalman::initial_kf_setup(targetLLA);
+		//Serial.println("Done Kalman Setup");
 	}
 	if (JohnnyKalman::hasDoneSetup && JohnnyKalman::nextTime < millis()) {
 		JohnnyKalman::kalman_update();
-		
+		//Serial.println("kalman updated");
 		JohnnyKalman::nextTime = millis() + 100;
 	}
     
