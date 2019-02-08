@@ -89,7 +89,7 @@ void setup() {
 		SpecSD::setup("test");
 	#endif
 
-	Serial.println("end setup");
+	//Serial.println("end setup");
 }
 
 void loop() {
@@ -110,25 +110,8 @@ void loop() {
     SpecGPS::update();
 	
 	#ifdef HASBMP
-	bmp.update();
+	//bmp.update();
 	#endif
-	
-	if ((!JohnnyKalman::hasDoneSetup) && SpecGPS::gps.satellites.value() > 3 && SpecGPS::baselineAlt > 1) {
-		// get saved target coords for reference point
-		//Serial.println("Starting Kalman Setup");
-		SpecGPS::LLA targetLLA;
-		targetLLA.lat = Settings::targetLatitude;
-		targetLLA.lng = Settings::targetLongitude;
-		targetLLA.alt = Settings::targetAltitude;
-		
-		JohnnyKalman::initial_kf_setup(targetLLA);
-		//Serial.println("Done Kalman Setup");
-	}
-	if (JohnnyKalman::hasDoneSetup && JohnnyKalman::nextTime < millis()) {
-		JohnnyKalman::kalman_update();
-		//Serial.println("kalman updated");
-		JohnnyKalman::nextTime = millis() + 100;
-	}
     
     // if (millis() - SpecMPU6050::UpdateTimer > 1000 / SpecMPU6050::UpdatePeriod) {
     //     SpecMPU6050::update();
@@ -142,6 +125,16 @@ void loop() {
 
     if (millis() - SpecRFD900::UpdateTimer > 1000 / SpecRFD900::UpdatePeriod) {
         SpecRFD900::UpdateTimer = millis();
+		
+		if ((!JohnnyKalman::hasDoneSetup) && SpecGPS::gps.satellites.value() >= 4) {
+			//Serial.println("Starting Kalman Setup");
+			JohnnyKalman::initial_kf_setup();
+			//Serial.println("Done Kalman Setup");
+		}
+		if (JohnnyKalman::hasDoneSetup) {
+			JohnnyKalman::kalman_update();
+			//Serial.println("kalman updated");
+		}
 		
 		telemetry = "";
 
@@ -189,7 +182,7 @@ void loop() {
         // add altitude
         //telemetry += bmp.getKAlt();
 		//telemetry += bmp.readAvgOffsetAltitude();
-		telemetry += JohnnyKalman::filter_output.z_pos;
+		telemetry += String(JohnnyKalman::filter_output.z_pos, 2);
         telemetry += " ";
 
         telemetry += millis()/100;
@@ -218,6 +211,7 @@ void loop() {
 		
         telemetry += "!";
         SpecRFD900::sendTelemetry(telemetry);
+		//Serial.print(telemetry);
 		Serial.print(telemetry + " ");
 		#ifdef MEMORYCHECK
 			Serial.print(freeMemory(), DEC);
@@ -263,9 +257,9 @@ void loop() {
 	#ifdef LOOPTRACKER
 	// to test how long it takes to run the loop
 	long loopTime = millis() - startTime;
-	//if(loopTime > 4) {
+	if(loopTime > 1) {
 		Serial.println("Total Time: " + String(loopTime));
-	//}
+	}
 	#endif
 
 }

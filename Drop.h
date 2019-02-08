@@ -20,6 +20,7 @@ namespace Drop {
 	bool droppedLHabs = false;
 	bool droppedRHabs = false;
 	bool droppedWater = false;
+	
 	byte sendBack = 0;
 	
 	//srvo 0 
@@ -178,6 +179,9 @@ namespace Drop {
 		}
 		if (droppedLHabs) {
 			sendBack |= 0b00000010;
+		}
+		if (droppedRHabs) {
+			sendBack |= 0b00010000;
 		}
 		if (droppedWater) {
 			sendBack |= 0b00000001;

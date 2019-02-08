@@ -10,9 +10,8 @@
 	unsigned long UpdateTimer = 0;
     const unsigned long UpdatePeriod = 100;
 	
-	float fakeLat = 39.747996;
-	float fakeLng = -83.816356;
-	float fakeSpeed = 16.0;
+	float fake = -100;
+	float fakeSpeed = 10;
 	
 	// get current coords
 	SpecGPS::ENU curENU;
@@ -31,9 +30,7 @@
 
 	uint16_t bearing;
 	
-	const float tDel = 0.01;
-	const float dragVert = 0.01;
-	const float dragHorz = 0.01;
+	const float tDel = 0.005;
 	
 	// prototype
 	SpecGPS::ENU makePrediction(float packageMass, bool habitat);
@@ -68,26 +65,39 @@
 		
 		SpecGPS::lla_to_enu(curLLA, tarLLA, tarECEF, curENU);
 		
-		habPrediction = makePrediction(0.12856509, true);
+		//habPrediction = makePrediction(0.12856509, true);
 		watPrediction = makePrediction(0.50121957, false);
 	}
 	
 	SpecGPS::ENU makePrediction(float packageMass, bool habitat) {
 		
-		float speed = SpecGPS::gps.speed.mps();
-		//float speed = fakeSpeed;
+		//float speed = SpecGPS::gps.speed.mps();
 		//bearing = SpecGPS::bearing(prevLLA.lat, prevLLA.lng, curLLA.lat, curLLA.lng);
-		bearing = SpecGPS::gps.course.deg();
+		//bearing = SpecGPS::gps.course.deg();
 		//bearing = 90;
 		
 		float x = curENU.e;
         float y = curENU.n;
         float z = curENU.u;
 		
+		// fake += 1.6;
+		// if(fake > 10) fake = -300;
+		// float x = fake;
+        // float y = 0;
+        // float z = 30;
+		
 		// find initial velocity from speed and bearing
-        float u = speed * cos(bearing * 180 / 3.14159265);
-        float v = speed * sin(bearing * 180 / 3.14159265);
-        float w = 0;
+        // float u = speed * cos(bearing * 180 / 3.14159265);
+        // float v = speed * sin(bearing * 180 / 3.14159265);
+        // float w = 0;
+		float u = JohnnyKalman::filter_output.x_vel;
+		float v = JohnnyKalman::filter_output.y_vel;
+		float w = JohnnyKalman::filter_output.z_vel;
+		// fakeSpeed += 0.5;
+		// if(fakeSpeed > 90) fakeSpeed = 10;
+		// float u = fakeSpeed;
+		// float v = 0;
+		// float w = 0;
 		
 		float groundAirSpeedOffset = 2;
 		
@@ -113,12 +123,13 @@
 		
 		float ax = -(dragHorz/packageMass)*(u-uAir)*abs(u-uAir);
         float ay = -(dragHorz/packageMass)*(v-vAir)*abs(v-vAir);
-        float az = -9.807 +(dragVert/packageMass)*(w)*abs(w);
+        float az = -9.807 -(dragVert/packageMass)*(w)*abs(w);
 		
 		int count = 0;
         while (z > 0){
             count++;
             x = u*tDel + x;
+			//Serial.println(x);
             y = v*tDel + y;
             z = w*tDel + z;
             
@@ -128,7 +139,7 @@
             
             ax = -(dragHorz/packageMass)*(u-uAir)*abs(u-uAir);
             ay = -(dragHorz/packageMass)*(v-vAir)*abs(v-vAir);
-            az = -9.807 +(dragVert/packageMass)*(w)*abs(w) + liftConst * (abs(w) * abs(w));
+            az = -9.807 -(dragVert/packageMass)*(w)*abs(w) - liftConst * (abs(w) * abs(w));
         }
 		
 		SpecGPS::ENU prediction;
@@ -136,6 +147,8 @@
 		prediction.e = x;
 		prediction.n = y;
 		prediction.u = z;
+		
+		// Serial.println("fake e: " + String(fake) + " prediction e: " + String(prediction.e) + " speed: " + String(fakeSpeed) + " difference:" + String(fake - prediction.e));
 		
 		return prediction;
 		

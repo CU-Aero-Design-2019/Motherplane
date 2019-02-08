@@ -4,8 +4,8 @@
 #include "constants.h"
 #include "settings.h"
 #include "Drop.h"
-
-//Servo testServo;
+#include <SpecGPS.h>
+#include <SpecBMP180.h>
 
 // struct to hold serial communication stuff
 namespace USB {
@@ -14,7 +14,7 @@ namespace USB {
     bool waitingForSerial = false;
     long firstSerialAvailableTime;
 	
-	const int USBSerialBaudrate = 250000;
+	const int USBSerialBaudrate = 115200;
 
     void setup() {
         Serial.begin(USBSerialBaudrate);
@@ -32,8 +32,12 @@ namespace USB {
             Serial.println(y);
             String z = incoming.substring(6,7);
             Serial.println(z);
+			Settings::targetLatitude = 39.747834;
+			Settings::targetLongitude = -83.812673;
+			Settings::saveSettings();
         }else if (incoming.substring(0, 4).equals("GTAR")) {
-            Settings::loadSettings();
+            Serial.println("Target Lat: " + String(Settings::targetLatitude, 8));
+            Serial.println("Target Lng: " + String(Settings::targetLongitude, 8));
         }else if (incoming.substring(0, 4).equals("SRVO")) {
             incoming = incoming.substring(5);
             Serial.println(incoming);
@@ -50,7 +54,13 @@ namespace USB {
 
             Drop::manuallySet(index, val);
 
-        }
+        }else if (incoming.substring(0, 4).equals("RBLA")) {
+			#ifdef HASBMP
+				bmp.resetOffset();
+			#else
+				SpecGPS::resetOffset();
+			#endif
+		}
     }
 
     // to be called at a regular interval
