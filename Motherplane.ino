@@ -1,9 +1,20 @@
 // Main file for SAE aero design 2019 motherplane
 
-//#define SDTELEMETRY
+/* checklist for night before test flight:
+Sends telemetry to ground station
+Gets GPS lock
+Does reasonable alt
+Can release/load every payload
+Sends dropped signal
+Logs data to SD
+Updates fast enough
+
+*/
+
+#define SDTELEMETRY
 //#define RCIN
 //#define LOOPTRACKER
-//#define HASBMP
+#define HASBMP
 
 #include "settings.h"
 #include <Servo.h>
@@ -110,28 +121,22 @@ void loop() {
     SpecGPS::update();
 	
 	#ifdef HASBMP
-	//bmp.update();
+	bmp.update();
 	#endif
-    
-    // if (millis() - SpecMPU6050::UpdateTimer > 1000 / SpecMPU6050::UpdatePeriod) {
-    //     SpecMPU6050::update();
-    //     SpecMPU6050::UpdateTimer = millis();
-    // }
 
 	// if (millis() - Prediction::UpdateTimer > 1000 / Prediction::UpdatePeriod) {
         // Prediction::update();
         // Prediction::UpdateTimer = millis();
     // }
 
-    if (millis() - SpecRFD900::UpdateTimer > 1000 / SpecRFD900::UpdatePeriod) {
-        SpecRFD900::UpdateTimer = millis();
+    if (millis() > SpecRFD900::UpdateTimer) {
+        SpecRFD900::UpdateTimer = millis() + 100;
 		
 		if ((!JohnnyKalman::hasDoneSetup) && SpecGPS::gps.satellites.value() >= 4) {
 			//Serial.println("Starting Kalman Setup");
 			JohnnyKalman::initial_kf_setup();
 			//Serial.println("Done Kalman Setup");
-		}
-		if (JohnnyKalman::hasDoneSetup) {
+		} else if (JohnnyKalman::hasDoneSetup) {
 			JohnnyKalman::kalman_update();
 			//Serial.println("kalman updated");
 		}
@@ -182,7 +187,7 @@ void loop() {
         // add altitude
         //telemetry += bmp.getKAlt();
 		//telemetry += bmp.readAvgOffsetAltitude();
-		telemetry += String(JohnnyKalman::filter_output.z_pos, 2);
+		telemetry += String(bmp.getKAlt(), 2);
         telemetry += " ";
 
         telemetry += millis()/100;
@@ -229,8 +234,8 @@ void loop() {
     }
 
 	#ifdef SDTELEMETRY
-    if (millis() - SpecSD::UpdateTimer > 1000 / SpecSD::UpdatePeriod) {
-        SpecSD::UpdateTimer = millis();
+    if (millis() > SpecSD::UpdatePeriod) {
+        SpecSD::UpdateTimer = millis() + 100;
 		sdt = "";
 		sdt += String(SpecGPS::gps.location.lat(), 9);
 		sdt += " ";
@@ -242,12 +247,6 @@ void loop() {
         sdt += " ";
 		sdt += String(bmp.getKAlt(), 2); // m
         sdt += " ";
-		sdt += String(SpecGPS::gps.time.minute());
-		sdt += " ";
-		sdt += String(SpecGPS::gps.time.second());
-		sdt += " ";
-		sdt += String(SpecGPS::gps.time.centisecond());
-		sdt += " ";
 		sdt += String(millis() / 1000, 2);
         sdt += String("\n");
 		SpecSD::writeTelemetry(sdt);
