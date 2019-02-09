@@ -217,13 +217,13 @@ void loop() {
         telemetry += "!";
         SpecRFD900::sendTelemetry(telemetry);
 		//Serial.print(telemetry);
-		Serial.print(telemetry + " ");
+		//Serial.print(telemetry + " ");
 		#ifdef MEMORYCHECK
 			Serial.print(freeMemory(), DEC);
 			Serial.print(" ");
 		#endif
-		Serial.print(String(SpecGPS::gps.satellites.value()) + " ");
-		Serial.println(SpecRFD900::in[0], HEX);
+		// Serial.print(String(SpecGPS::gps.satellites.value()) + " ");
+		// Serial.println(SpecRFD900::in[0], HEX);
 		// Serial.print("time: "); Serial.println(SpecGPS::gps.time.value());
 		// Serial.print("nSats: "); Serial.println(SpecGPS::gps.satellites.value());
 		// Serial.print("posAge: "); Serial.println(SpecGPS::gps.location.age());

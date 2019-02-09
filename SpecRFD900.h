@@ -36,7 +36,7 @@ namespace SpecRFD900 {
 		if (RFD900->available()) {
 			tLastRec = millis();
 			// flush out if we have too many things
-			while (RFD900->available() > 2) RFD900->read();
+			//while (RFD900->available() > 2) Serial.println(RFD900->read());
 			
 			in[0] = RFD900->read();
 			in[1] = RFD900->read();
@@ -80,24 +80,22 @@ namespace SpecRFD900 {
 			// 		Serial.println("Saving incoming target" + String(targetLat) + " " + String(targetLng));
 			// 	}
 			// }
-			
+			//Serial.print(": " + String(in[0], HEX) + " ");
 			// swap things if needed
 			if (in[0] & 0b10000000) {
 				byte temp = in[0];
 				in[0] = in[1];
 				in[1] = temp;
 			}
-			
-			if (in[0] == 0) {
-				//Serial.println("No ground telem");
-			}
-			if (in[0] & 0b10000000) {
+			//Serial.println("1: " + String(in[0], HEX));
+
+			if (in[0] & 0b01000000) {
 				Drop::collectTarget = true;
 			} else {
 				Drop::collectTarget = false;
 			}
 
-			if (in[0] & 0b01000000) {
+			if (in[1] & 0b10000000) {
 				hasSignal = true;
 			} else {
 				hasSignal = false;
@@ -129,14 +127,18 @@ namespace SpecRFD900 {
 			
 			if (in[0] & 0b00000010) {
 				Drop::dropLHabs = true;
+				//Serial.println("dropLHabs true");
 			} else {
 				Drop::dropLHabs = false;
+				//Serial.println("dropLHabs false");
 			}
 			
 			if (in[1] & 0b00000010) {
 				Drop::dropRHabs = true;
+				//Serial.println("dropRHabs true");
 			} else {
 				Drop::dropRHabs = false;
+				//Serial.println("dropRHabs false");
 			}
 			
 			if (in[0] & 0b00000001) {
@@ -151,6 +153,11 @@ namespace SpecRFD900 {
 				#else
 					SpecGPS::resetOffset();
 				#endif
+				Drop::droppedGlider1 = false;
+				Drop::droppedGlider2 = false;
+				Drop::droppedLHabs = false;
+				Drop::droppedRHabs = false;
+				Drop::droppedWater = false;
 			}
 			
 			//Serial.println(in);
