@@ -12,7 +12,6 @@ Updates fast enough
 */
 
 #define SDTELEMETRY
-//#define RCIN
 //#define LOOPTRACKER
 #define HASBMP
 
@@ -28,11 +27,7 @@ Updates fast enough
 #endif
 #include "Drop.h"
 
-#ifdef RCIN
-	#include <SBUS.h>
-#else
-	#include "USB.h"
-#endif
+#include "USB.h"
 
 #ifdef SDTELEMETRY
 	#include <SpecSD.h>
@@ -42,13 +37,6 @@ SpecBMP180 bmp;
 
 #include <JohnnyKalman.h>
 #include "Prediction.h"
-
-#ifdef RCIN
-	SBUS rcIn(Serial1);
-	uint16_t channel[16];
-	bool failsafe = false;
-	bool lostFrame = false;
-#endif
 
 // String to write telemetry to which will be sent to ground station
 String telemetry;
@@ -71,13 +59,8 @@ void setup() {
 	
 	Drop::setup();
 	
-	// USB and RC share Serial1 so only one should be used.
-	#ifdef RCIN
-		rcIn.begin();
-	#else
-		// USB serial setup
-		USB::setup();
-	#endif
+	// USB serial setup
+	USB::setup();
 
     // IMU setup
     //SpecMPU6050::setup();
@@ -110,24 +93,18 @@ void loop() {
 	#endif
 	
     // check for incoming serial data
-	#ifndef RCIN
-		USB::update();
-	#endif
     SpecRFD900::update();
 	
+	// update drop values
 	Drop::update();
 
-    // needs to be constantly updated
+    // needs to be constantly fed with gps data
     SpecGPS::update();
 	
+	// updates the kalman filter on the baro
 	#ifdef HASBMP
-	bmp.update();
+		bmp.update();
 	#endif
-
-	// if (millis() - Prediction::UpdateTimer > 1000 / Prediction::UpdatePeriod) {
-        // Prediction::update();
-        // Prediction::UpdateTimer = millis();
-    // }
 
     if (millis() > SpecRFD900::UpdateTimer) {
         SpecRFD900::UpdateTimer = millis() + 100;
@@ -162,21 +139,6 @@ void loop() {
 	        // telemetry += " ";
 	        // telemetry += String(SpecGPS::gps.location.lng(), 8);;
 	        // telemetry += " ";
-			
-			SpecGPS::LLA currentLLA;
-			currentLLA.lat = SpecGPS::gps.location.lat();
-			currentLLA.lng = SpecGPS::gps.location.lng();
-			SpecGPS::LLA targetLLA;
-			targetLLA.lat = Settings::targetLatitude;
-			targetLLA.lng = Settings::targetLongitude;
-			targetLLA.alt = 0;
-			SpecGPS::ENU currentENU;
-			SpecGPS::lla_to_enu(currentLLA, targetLLA, currentENU);
-
-			// telemetry += String(currentENU.e, 1);
-			// telemetry += " ";
-			// telemetry += String(currentENU.n, 1);
-			// telemetry += " ";
 
 			telemetry += String(JohnnyKalman::filter_output.x_pos, 2);
 	        telemetry += " ";
@@ -206,13 +168,6 @@ void loop() {
 		
 		telemetry += Prediction::bearing;
 		telemetry += " ";
-				
-		#ifdef RCIN
-			// RC throttle
-			rcIn.read(&channel[0], &failsafe, &lostFrame);
-			telemetry += String(channel[1]);
-			telemetry += " ";
-		#endif
 		
         telemetry += "!";
         SpecRFD900::sendTelemetry(telemetry);
