@@ -14,13 +14,21 @@ namespace SpecRFD900 {
 	long tLastRec = 0;
 	bool hasSignal = false;
 
-	int baudrate = 9600;
+	int baudrate = 57600;
 	HardwareSerial *RFD900;
 	
 	byte in[2];
 	char targetLatBA[12];
 	char targetLngBA[12];
 
+	void setRadioParams() {
+		delay(1001);
+		RFD900->print("+++");
+		delay(1001);
+		RFD900->print("ATI");
+		RFD900->print("ATO");
+	}
+	
 	void setup(HardwareSerial *serial) {
 		RFD900 = serial;
 		RFD900->begin(baudrate);
@@ -80,91 +88,97 @@ namespace SpecRFD900 {
 			// 		Serial.println("Saving incoming target" + String(targetLat) + " " + String(targetLng));
 			// 	}
 			// }
-			//Serial.print(": " + String(in[0], HEX) + " ");
-			// swap things if needed
-			if (in[0] & 0b10000000) {
-				byte temp = in[0];
-				in[0] = in[1];
-				in[1] = temp;
+			
+			
+			bool goodTransmission = true;
+			if (in[0] & 0b10000000 && in[1] & 0b10000000) {
+				goodTransmission = false;
 			}
-			//Serial.println("1: " + String(in[0], HEX));
+			if (in[0] | 0b01111111 && in[1] & 0b01111111) {
+				goodTransmission = false;
+			}
+			
+			if (goodTransmission) {
+				
+				// swap things if needed
+				if (in[0] & 0b10000000) {
+					byte temp = in[0];
+					in[0] = in[1];
+					in[1] = temp;
+				}
 
-			if (in[0] & 0b01000000) {
-				Drop::collectTarget = true;
-			} else {
-				Drop::collectTarget = false;
-			}
+				if (in[0] & 0b01000000) {
+					Drop::collectTarget = true;
+				} else {
+					Drop::collectTarget = false;
+				}
 
-			if (in[1] & 0b10000000) {
-				hasSignal = true;
-			} else {
-				hasSignal = false;
+				if (in[1] & 0b10000000) {
+					hasSignal = true;
+				} else {
+					hasSignal = false;
+				}
+				
+				if (in[0] & 0b00100000) {
+					Drop::dropArmed = true;
+				} else {
+					Drop::dropArmed = false;
+				}
+				
+				if (in[0] & 0b00010000) {
+					Drop::autoDrop = true;
+				} else {
+					Drop::autoDrop = false;
+				}
+				
+				if (in[0] & 0b00001000) {
+					Drop::dropGlider1 = true;
+				} else {
+					Drop::dropGlider1 = false;
+				}
+				
+				if (in[0] & 0b00000100) {
+					Drop::dropGlider2 = true;
+				} else {
+					Drop::dropGlider2 = false;
+				}
+				
+				if (in[0] & 0b00000010) {
+					Drop::dropLHabs = true;
+				} else {
+					Drop::dropLHabs = false;
+				}
+				
+				if (in[1] & 0b00000010) {
+					Drop::dropRHabs = true;
+				} else {
+					Drop::dropRHabs = false;
+				}
+				
+				if (in[0] & 0b00000001) {
+					Drop::dropWater = true;
+				} else {
+					Drop::dropWater = false;
+				}
+				
+				if (in[1] & 0b00100000) {
+					#ifdef HASBMP
+						bmp.resetOffset();
+					#else
+						SpecGPS::resetOffset();
+					#endif
+					Drop::droppedGlider1 = false;
+					Drop::droppedGlider2 = false;
+					Drop::droppedLHabs = false;
+					Drop::droppedRHabs = false;
+					Drop::droppedWater = false;
+				}
+				
+				Drop::update();
 			}
-			
-			if (in[0] & 0b00100000) {
-				Drop::dropArmed = true;
-			} else {
-				Drop::dropArmed = false;
+			if(tLastRec > 1000){
+				in[0] = 0;
 			}
-			
-			if (in[0] & 0b00010000) {
-				Drop::autoDrop = true;
-			} else {
-				Drop::autoDrop = false;
-			}
-			
-			if (in[0] & 0b00001000) {
-				Drop::dropGlider1 = true;
-			} else {
-				Drop::dropGlider1 = false;
-			}
-			
-			if (in[0] & 0b00000100) {
-				Drop::dropGlider2 = true;
-			} else {
-				Drop::dropGlider2 = false;
-			}
-			
-			if (in[0] & 0b00000010) {
-				Drop::dropLHabs = true;
-				//Serial.println("dropLHabs true");
-			} else {
-				Drop::dropLHabs = false;
-				//Serial.println("dropLHabs false");
-			}
-			
-			if (in[1] & 0b00000010) {
-				Drop::dropRHabs = true;
-				//Serial.println("dropRHabs true");
-			} else {
-				Drop::dropRHabs = false;
-				//Serial.println("dropRHabs false");
-			}
-			
-			if (in[0] & 0b00000001) {
-				Drop::dropWater = true;
-			} else {
-				Drop::dropWater = false;
-			}
-			
-			if (in[1] & 0b00100000) {
-				#ifdef HASBMP
-					bmp.resetOffset();
-				#else
-					SpecGPS::resetOffset();
-				#endif
-				Drop::droppedGlider1 = false;
-				Drop::droppedGlider2 = false;
-				Drop::droppedLHabs = false;
-				Drop::droppedRHabs = false;
-				Drop::droppedWater = false;
-			}
-			
-			//Serial.println(in);
-			Drop::update();
-		}
-		if(tLastRec > 1000){
-			in[0] = 0;
 		}
 	}
 

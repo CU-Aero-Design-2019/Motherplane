@@ -71,59 +71,55 @@
 	
 	SpecGPS::ENU makePrediction(float packageMass, bool habitat) {
 		
-		//float speed = SpecGPS::gps.speed.mps();
-		//bearing = SpecGPS::bearing(prevLLA.lat, prevLLA.lng, curLLA.lat, curLLA.lng);
-		//bearing = SpecGPS::gps.course.deg();
-		//bearing = 90;
+		float speed = SpecGPS::gps.speed.mps();
+		bearing = SpecGPS::gps.course.deg();
 		
 		float x = curENU.e;
         float y = curENU.n;
         float z = curENU.u;
 		
-		// fake += 1.6;
-		// if(fake > 10) fake = -300;
-		// float x = fake;
-        // float y = 0;
-        // float z = 30;
-		
 		// find initial velocity from speed and bearing
-        // float u = speed * cos(bearing * 180 / 3.14159265);
-        // float v = speed * sin(bearing * 180 / 3.14159265);
-        // float w = 0;
-		float u = JohnnyKalman::filter_output.x_vel;
-		float v = JohnnyKalman::filter_output.y_vel;
-		float w = JohnnyKalman::filter_output.z_vel;
-		// fakeSpeed += 0.5;
-		// if(fakeSpeed > 90) fakeSpeed = 10;
-		// float u = fakeSpeed;
-		// float v = 0;
-		// float w = 0;
+        float u = speed * cos(bearing * 180 / 3.14159265);
+        float v = speed * sin(bearing * 180 / 3.14159265);
+        float w = 0;
+		// float u = JohnnyKalman::filter_output.x_vel;
+		// float v = JohnnyKalman::filter_output.y_vel;
+		// float w = JohnnyKalman::filter_output.z_vel;
+
 		
 		float groundAirSpeedOffset = 2;
 		
-		// float uAir = (((z-groundAirSpeedOffset)*(uAirPlane - uAirGround))/(z-groundAirSpeedOffset)) + uAirGround;
-		// float vAir = (((z-groundAirSpeedOffset)*(vAirPlane - vAirGround))/(z-groundAirSpeedOffset)) + vAirGround;
 		float uAir = 0;
 		float vAir = 0;
 		
 		float dragVert; // new
 		float dragHorz; // new
-		float liftConst; // new
+		float rho = 2.699;
+		float area_xy;
+		float area_z;
+		float dragVert_para;
+		float area_z_para = 0.2919;
+
 		// true - habitat, false - water bottles
 		// new
 		if (habitat == true) {
-			liftConst = 0;
-			dragVert = 0.764;;
+			dragVert_para = 0;
+			dragVert = 0.764;
 			dragHorz = 0.139;
+			area_xy = 0.00541;
+			area_z = 0.018177;
+			
 		} else {
-			liftConst = 0.128;//?
+			dragVert_para = 0.128;
 			dragVert = 1.05;//?
 			dragHorz = 1.5;//?
+			area_xy = 0.0129;
+			area_z = 0.0032;
 		}
 		
-		float ax = -(dragHorz/packageMass)*(u-uAir)*abs(u-uAir);
-        float ay = -(dragHorz/packageMass)*(v-vAir)*abs(v-vAir);
-        float az = -9.807 -(dragVert/packageMass)*(w)*abs(w);
+		float ax = -(dragHorz/packageMass)*0.5*rho*area_xy*(u-uAir)*abs(u-uAir);
+        float ay = -(dragHorz/packageMass)*0.5*rho*area_xy*(v-vAir)*abs(v-vAir);
+        float az = -9.807 + 0.5*rho*w*w*(dragVert_para * area_z_para + dragVert * area_z);
 		
 		int count = 0;
         while (z > 0){
@@ -137,9 +133,9 @@
             v = v + (ay*tDel);
             w = w + (az*tDel);
             
-            ax = -(dragHorz/packageMass)*(u-uAir)*abs(u-uAir);
-            ay = -(dragHorz/packageMass)*(v-vAir)*abs(v-vAir);
-            az = -9.807 -(dragVert/packageMass)*(w)*abs(w) - liftConst * (abs(w) * abs(w));
+            ax = -(dragHorz/packageMass)*0.5*rho*area_xy*(u-uAir)*abs(u-uAir);
+			ay = -(dragHorz/packageMass)*0.5*rho*area_xy*(v-vAir)*abs(v-vAir);
+			az = -9.807 + 0.5*rho*w*w*(dragVert_para * area_z_para + dragVert * area_z);
         }
 		
 		SpecGPS::ENU prediction;

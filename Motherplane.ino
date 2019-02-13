@@ -11,7 +11,7 @@ Updates fast enough
 
 */
 
-#define SDTELEMETRY
+//#define SDTELEMETRY
 //#define LOOPTRACKER
 #define HASBMP
 
@@ -49,6 +49,8 @@ String telemetry;
 #ifdef LOOPTRACKER
 	long startTime;
 #endif
+
+//unsigned long kalmanStartTime = 2147483647;
 
 void setup() {
 	
@@ -95,6 +97,8 @@ void loop() {
     // check for incoming serial data
     SpecRFD900::update();
 	
+	USB::update();
+	
 	// update drop values
 	Drop::update();
 
@@ -109,17 +113,21 @@ void loop() {
     if (millis() > SpecRFD900::UpdateTimer) {
         SpecRFD900::UpdateTimer = millis() + 100;
 		
-		if ((!JohnnyKalman::hasDoneSetup) && SpecGPS::gps.satellites.value() >= 4) {
-			//Serial.println("Starting Kalman Setup");
-			JohnnyKalman::initial_kf_setup();
-			//Serial.println("Done Kalman Setup");
-		} else if (JohnnyKalman::hasDoneSetup) {
-			JohnnyKalman::kalman_update();
-			//Serial.println("kalman updated");
-		}
+		// if ((!JohnnyKalman::hasDoneSetup) && SpecGPS::gps.satellites.value() >= 4) {
+			// //Serial.println("Starting Kalman Setup");
+			// JohnnyKalman::initial_kf_setup();
+			// bmp.resetOffset(100);
+			// kalmanStartTime = millis();
+			// //Serial.println("Done Kalman Setup");
+		// } else if (JohnnyKalman::hasDoneSetup) {
+			// JohnnyKalman::kalman_update();
+			// //Serial.println("kalman updated");
+		// }
+
+		Serial.print(SpecGPS::gps.satellites.value());
 		
 		telemetry = "";
-
+		
         // add current time
         telemetry += SpecGPS::gps.time.value();
         telemetry += " ";
@@ -139,18 +147,35 @@ void loop() {
 	        // telemetry += " ";
 	        // telemetry += String(SpecGPS::gps.location.lng(), 8);;
 	        // telemetry += " ";
+			
+			double lat = SpecGPS::gps.location.lat();
+			double lng = SpecGPS::gps.location.lng();
+			double alt = bmp.getKAlt();
+			SpecGPS::lla_to_enu(lat, lng, alt, Settings::targetLatitude, Settings::targetLongitude);
+			telemetry += String(lat, 2);
+	        telemetry += " ";
+	        telemetry += String(lng, 2);
+	        telemetry += " ";
 
-			telemetry += String(JohnnyKalman::filter_output.x_pos, 2);
-	        telemetry += " ";
-	        telemetry += String(JohnnyKalman::filter_output.y_pos, 2);
-	        telemetry += " ";
+			// telemetry += String(JohnnyKalman::filter_output.x_pos, 2);
+	        // telemetry += " ";
+	        // telemetry += String(JohnnyKalman::filter_output.y_pos, 2);
+	        // telemetry += " ";
 	    }
 
         // add altitude
-        //telemetry += bmp.getKAlt();
+        telemetry += bmp.getKAlt();
+		telemetry += " ";
+		telemetry += bmp.readOffsetAltitude();
 		//telemetry += bmp.readAvgOffsetAltitude();
-		telemetry += String(bmp.getKAlt(), 2);
-        telemetry += " ";
+		//telemetry += String(bmp.getKAlt(), 2);
+		//if (millis() + 10000 > kalmanStartTime) {
+			//telemetry += String(JohnnyKalman::filter_output.z_pos, 1);
+			//telemetry += String(bmp.readOffsetAltitude(), 1);
+        //} else {
+			//telemetry += "0.00";
+		//}
+		telemetry += " ";
 
         telemetry += millis()/100;
         telemetry += " ";
@@ -171,21 +196,12 @@ void loop() {
 		
         telemetry += "!";
         SpecRFD900::sendTelemetry(telemetry);
-		//Serial.print(telemetry);
-		//Serial.print(telemetry + " ");
+		Serial.println(telemetry);
 		#ifdef MEMORYCHECK
 			Serial.print(freeMemory(), DEC);
 			Serial.print(" ");
 		#endif
-		// Serial.print(String(SpecGPS::gps.satellites.value()) + " ");
-		// Serial.println(SpecRFD900::in[0], HEX);
-		// Serial.print("time: "); Serial.println(SpecGPS::gps.time.value());
-		// Serial.print("nSats: "); Serial.println(SpecGPS::gps.satellites.value());
-		// Serial.print("posAge: "); Serial.println(SpecGPS::gps.location.age());
-		// Serial.print("posValid: "); Serial.println(SpecGPS::gps.location.isValid());
-		// Serial.print("lat: "); Serial.println(SpecGPS::gps.location.lat());
-		// Serial.print("lng: "); Serial.println(SpecGPS::gps.location.lng());
-		// Serial.print("alt: "); Serial.println(SpecGPS::gps.altitude.meters());
+
     }
 
 	#ifdef SDTELEMETRY
