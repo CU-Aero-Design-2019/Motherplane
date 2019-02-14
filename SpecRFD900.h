@@ -48,58 +48,61 @@ namespace SpecRFD900 {
 			in[0] = RFD900->read();
 			in[1] = RFD900->read();
 			
-			// receive target from ground station
-			// if (in[1] & 0b00010000) {
-			// 	bool goodTransmission = true;
-			// 	for (int i = 0; i < 22; i++) {
-			// 		if (RFD900->available() > 0) {
-			// 			if (i < 11) {
-			// 				targetLatBA[i] = RFD900->read();
-			// 			} else {
-			// 				targetLngBA[i-11] = RFD900->read();
-			// 			}
-			// 		} else {
-			// 			// abort
-			// 			goodTransmission = false;
-			// 			Serial.println("didn't get enough bytes for target");
-			// 		}
-			// 	}
-			// 	targetLatBA[11] = '\0';
-			// 	targetLngBA[11] = '\0';
-				
-			// 	float targetLat = atof(targetLatBA);
-			// 	float targetLng = atof(targetLngBA);
-				
-			// 	// making sure it's somewhere near the US
-			// 	if (targetLat < 22.7
-			// 	 || targetLng < -115.2
-			// 	 || targetLat > 46.8
-			// 	 || targetLng > -64.5) {
-			// 		goodTransmission = false;
-			// 		Serial.println("target outside US");
-			// 	}
-				
-			// 	if (goodTransmission) {
-			// 		Settings::targetLongitude = targetLat;
-			// 		Settings::targetLatitude = targetLng;
-			// 		Settings::saveSettings();
-			// 		JohnnyKalman::initial_kf_setup();
-			// 		Serial.println("Saving incoming target" + String(targetLat) + " " + String(targetLng));
-			// 	}
-			// }
 			
 			
+			//Serial.println(String(in[0],HEX) + " " + String(in[1],HEX));
+
 			bool goodTransmission = true;
 			if (in[0] & 0b10000000 && in[1] & 0b10000000) {
 				goodTransmission = false;
 				Serial.println("Good Transmission = false");
 			}
-			if (in[0] | 0b01111111 && in[1] & 0b01111111) {
+			if ((in[0] | 0b01111111) == 0b11111111 && (in[1] | 0b01111111) == 0b11111111) {
 				goodTransmission = false;
 				Serial.println("Good Transmission = false");
 			}
 			
 			if (goodTransmission) {
+
+				// //receive target from ground station
+				// if (in[1] & 0b00010000) {
+				// 	bool goodLLTransmission = true;
+				// 	for (int i = 0; i < 22; i++) {
+				// 		if (RFD900->available() > 0) {
+				// 			if (i < 11) {
+				// 				targetLatBA[i] = RFD900->read();
+				// 			} else {
+				// 				targetLngBA[i-11] = RFD900->read();
+				// 			}
+				// 		} else {
+				// 			// abort
+				// 			goodLLTransmission = false;
+				// 			Serial.println("didn't get enough bytes for target");
+				// 		}
+				// 	}
+				// 	targetLatBA[11] = '\0';
+				// 	targetLngBA[11] = '\0';
+					
+				// 	float targetLat = atof(targetLatBA);
+				// 	float targetLng = atof(targetLngBA);
+					
+				// 	// making sure it's somewhere near the US
+				// 	if (targetLat < 22.7
+				// 	 || targetLng < -115.2
+				// 	 || targetLat > 46.8
+				// 	 || targetLng > -64.5) {
+				// 		goodLLTransmission = false;
+				// 		Serial.println("target outside US");
+				// 	}
+					
+				// 	if (goodLLTransmission) {
+				// 		Settings::targetLongitude = targetLat;
+				// 		Settings::targetLatitude = targetLng;
+				// 		Settings::saveSettings();
+				// 		JohnnyKalman::initial_kf_setup();
+				// 		Serial.println("Saving incoming target" + String(targetLat) + " " + String(targetLng));
+				// 	}
+				// }
 				
 				// swap things if needed
 				if (in[0] & 0b10000000) {
@@ -109,7 +112,7 @@ namespace SpecRFD900 {
 				}
 
 				if (in[0] & 0b01000000) {
-					Serial.println("Set Origin Checked")
+					//Serial.println("Set Origin Checked");
 					Drop::collectTarget = true;
 				} else {
 					Drop::collectTarget = false;
@@ -159,9 +162,9 @@ namespace SpecRFD900 {
 				
 				// 
 				if (in[1] & 0b00100000) {
-					Serial.println("Zero Altitude Pressed")
+					//Serial.println("Zero Altitude Pressed");
 					#ifdef HASBMP
-						bmp.resetOffset();
+						bmp.resetOffset(20);
 					#else
 						SpecGPS::resetOffset();
 					#endif

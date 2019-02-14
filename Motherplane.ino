@@ -138,9 +138,20 @@ void loop() {
 		
 		if (Drop::collectTarget) {
 			//Serial.println("Collecting Target");
-			telemetry += String(Settings::targetLatitude, 1);
+
+			Settings::nSamples++;
+
+			Settings::totalTargetLatitude += SpecGPS::gps.location.lat();
+			Settings::totalTargetLongitude += SpecGPS::gps.location.lng();
+
+			Settings::targetLatitude = Settings::totalTargetLatitude / Settings::nSamples;
+			Settings::targetLongitude = Settings::totalTargetLongitude / Settings::nSamples;
+
+			Settings::saveSettings();
+
+			telemetry += String(Settings::targetLatitude, 6);
 	        telemetry += " ";
-	        telemetry += String(Settings::targetLongitude, 1);
+	        telemetry += String(Settings::targetLongitude, 6);
 	        telemetry += " ";
 		} else {
 			// telemetry += String(SpecGPS::gps.location.lat(), 8);

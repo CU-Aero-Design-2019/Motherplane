@@ -3,6 +3,9 @@
 
 #include "settings.h"
 #include <SpecGPS.h>
+#include "Prediction.h"
+
+extern SpecBMP180 bmp;
 
 namespace Drop {
 
@@ -108,9 +111,13 @@ namespace Drop {
 
 	void updateAuto(bool habitat = false) {
 
-		float course = SpecGPS::gps.course.deg();
-		float speed = SpecGPS::gps.speed.mps();
-		
+		// float course = SpecGPS::gps.course.deg();
+		float course = 90;
+		// float speed = SpecGPS::gps.speed.mps();
+		float speed = 30;
+		// float alt = bmp.getKAlt();
+		float alt = 35;
+
 		double curPredE;
 		double curPredN;
 		if (habitat) {
@@ -137,8 +144,8 @@ namespace Drop {
 
         // find estimated next drop location
 		float delT = (millis() - lastTime)/1000;
-		nextE = curPredE + speed * delT * lastHVE;
-		nextN = curPredN + speed * delT * lastHVN;
+		float nextE = curPredE + speed * delT * lastHVE;
+		float nextN = curPredN + speed * delT * lastHVN;
         
         // rotate 90 degrees to get perp line
         float tvE = -lastHVN;
@@ -146,7 +153,7 @@ namespace Drop {
                 
         double slope = tvE / tvN;
         
-        if (nextE > nextN * slope) {
+        if (nextE > nextN * slope && alt > 100*0.3048) {
             if (habitat) {
             	autoDropHabs = true;
             } else {
@@ -164,10 +171,10 @@ namespace Drop {
 	
 		if (dropArmed && !manualServo) {
 			if (autoDrop) {
+				dropLHabs = autoDropHabs;
+				dropRHabs = autoDropHabs;
+				dropWater = autoDropWater;
 
-
-
-				
 			} else {
 				if (dropWater) {
 					waterServo.write(waterDropped);

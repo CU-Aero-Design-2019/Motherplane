@@ -7,6 +7,10 @@ namespace Settings {
 	const int StartAddress = 3000;
 	const int varSize = 20;
 
+	int nSamples = 0;
+	double totalTargetLongitude;
+	double totalTargetLatitude;
+
 	// vars in memory
 	double targetLongitude;
 	double targetLatitude;
