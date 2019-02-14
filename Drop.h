@@ -58,6 +58,9 @@ namespace Drop {
 	bool manualServo = false;
 
 	long lastTime = 0;
+
+	float lastHVE;
+	float lastHVN;
 	
 	Servo waterServo;
 	Servo habLServo;
@@ -119,7 +122,7 @@ namespace Drop {
 		}
 
 		// quit early if we're outside target
-		float distFromTarget = sqrt(curPredN*curPredN+curPredE*curPredE);
+		float distFromTarget = sqrt(curPredN * curPredN + curPredE * curPredE);
 		if (distFromTarget > targetRadius){
 			return;
 		}
@@ -134,12 +137,12 @@ namespace Drop {
 
         // find estimated next drop location
 		float delT = (millis() - lastTime)/1000;
-		nextE = curPredE + speed * delT * hvE;
-		nextN = curPredN + speed * delT * hvN;
+		nextE = curPredE + speed * delT * lastHVE;
+		nextN = curPredN + speed * delT * lastHVN;
         
         // rotate 90 degrees to get perp line
-        float tvE = -hvN;
-        float tvN = hvE;
+        float tvE = -lastHVN;
+        float tvN = lastHVE;
                 
         double slope = tvE / tvN;
         
@@ -150,6 +153,9 @@ namespace Drop {
             	autoDropWater = true;
             }
         }
+
+        lastHVN = hvN;
+        lastHVE = hvE;
 
         lastTime = millis();
 	}
