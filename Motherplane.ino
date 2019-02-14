@@ -35,7 +35,7 @@ Updates fast enough
 
 SpecBMP180 bmp;
 
-#include <JohnnyKalman.h>
+//#include <JohnnyKalman.h>
 #include "Prediction.h"
 
 // String to write telemetry to which will be sent to ground station
@@ -133,7 +133,7 @@ void loop() {
         telemetry += " ";
 
         // speed
-        telemetry += SpecGPS::gps.speed.mph();
+        telemetry += SpecGPS::gps.speed.mps();
         telemetry += " ";
 		
 		if (Drop::collectTarget) {
@@ -151,7 +151,15 @@ void loop() {
 			double lat = SpecGPS::gps.location.lat();
 			double lng = SpecGPS::gps.location.lng();
 			double alt = bmp.getKAlt();
+
 			SpecGPS::lla_to_enu(lat, lng, alt, Settings::targetLatitude, Settings::targetLongitude);
+			SpecGPS::currentENU.e = lat;
+			SpecGPS::currentENU.n = lng;
+			SpecGPS::currentENU.u = alt;
+
+			// must update prediction before this
+			Drop::updateAuto();
+
 			telemetry += String(lat, 2);
 	        telemetry += " ";
 	        telemetry += String(lng, 2);
@@ -165,8 +173,7 @@ void loop() {
 
         // add altitude
         telemetry += bmp.getKAlt();
-		telemetry += " ";
-		telemetry += bmp.readOffsetAltitude();
+        //telemetry += bmp.readOffsetAltitude();
 		//telemetry += bmp.readAvgOffsetAltitude();
 		//telemetry += String(bmp.getKAlt(), 2);
 		//if (millis() + 10000 > kalmanStartTime) {

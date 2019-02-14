@@ -5,6 +5,8 @@
 #include <SpecGPS.h>
 
 namespace Drop {
+
+	const int targetRadius = 50;
 	
 	bool collectTarget = false;
 	bool dropArmed = false;
@@ -20,6 +22,10 @@ namespace Drop {
 	bool droppedLHabs = false;
 	bool droppedRHabs = false;
 	bool droppedWater = false;
+
+	bool autoDropWater = false;
+	bool autoDropHabs = false;
+	bool autoDropGliders = false;
 	
 	byte sendBack = 0;
 	
@@ -50,6 +56,8 @@ namespace Drop {
 	long lastSampleTime = 0;
 
 	bool manualServo = false;
+
+	long lastTime = 0;
 	
 	Servo waterServo;
 	Servo habLServo;
@@ -94,11 +102,65 @@ namespace Drop {
 		}
 
 	}
+
+	void updateAuto(bool habitat = false) {
+
+		float course = SpecGPS::gps.course.deg();
+		float speed = SpecGPS::gps.speed.mps();
+		
+		double curPredE;
+		double curPredN;
+		if (habitat) {
+			curPredE = Prediction::habPrediction.e;
+			curPredN = Prediction::habPrediction.n;
+		} else {
+			curPredE = Prediction::watPrediction.e;
+			curPredN = Prediction::watPrediction.n;
+		}
+
+		// quit early if we're outside target
+		float distFromTarget = sqrt(curPredN*curPredN+curPredE*curPredE);
+		if (distFromTarget > targetRadius){
+			return;
+		}
+
+		// find sin and cos of heading for later
+        float sn = sin(course * 0.0174533);
+        float cs = cos(course * 0.0174533);
+
+        // heading vector
+        float hvE = sn;
+        float hvN = cs;
+
+        // find estimated next drop location
+		float delT = (millis() - lastTime)/1000;
+		nextE = curPredE + speed * delT * hvE;
+		nextN = curPredN + speed * delT * hvN;
+        
+        // rotate 90 degrees to get perp line
+        float tvE = -hvN;
+        float tvN = hvE;
+                
+        double slope = tvE / tvN;
+        
+        if (nextE > nextN * slope) {
+            if (habitat) {
+            	autoDropHabs = true;
+            } else {
+            	autoDropWater = true;
+            }
+        }
+
+        lastTime = millis();
+	}
 	
 	void update() {
 	
 		if (dropArmed && !manualServo) {
 			if (autoDrop) {
+
+
+
 				
 			} else {
 				if (dropWater) {
@@ -195,6 +257,14 @@ namespace Drop {
 		// Serial.print("H " + String(dropHabs) + ", ");
 		// Serial.print("W " + String(dropWater) + ", ");
 		
+	}
+
+	void resetDroppedStatus() {
+		droppedGlider1 = false;
+		droppedGlider2 = false;
+		droppedLHabs = false;
+		droppedRHabs = false;
+		droppedWater = false;
 	}
 
 }

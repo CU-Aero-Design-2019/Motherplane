@@ -12,7 +12,6 @@ namespace SpecRFD900 {
 	const unsigned long UpdatePeriod = 10;
 
 	long tLastRec = 0;
-	bool hasSignal = false;
 
 	int baudrate = 57600;
 	HardwareSerial *RFD900;
@@ -93,9 +92,11 @@ namespace SpecRFD900 {
 			bool goodTransmission = true;
 			if (in[0] & 0b10000000 && in[1] & 0b10000000) {
 				goodTransmission = false;
+				Serial.println("Good Transmission = false");
 			}
 			if (in[0] | 0b01111111 && in[1] & 0b01111111) {
 				goodTransmission = false;
+				Serial.println("Good Transmission = false");
 			}
 			
 			if (goodTransmission) {
@@ -108,15 +109,10 @@ namespace SpecRFD900 {
 				}
 
 				if (in[0] & 0b01000000) {
+					Serial.println("Set Origin Checked")
 					Drop::collectTarget = true;
 				} else {
 					Drop::collectTarget = false;
-				}
-
-				if (in[1] & 0b10000000) {
-					hasSignal = true;
-				} else {
-					hasSignal = false;
 				}
 				
 				if (in[0] & 0b00100000) {
@@ -161,19 +157,17 @@ namespace SpecRFD900 {
 					Drop::dropWater = false;
 				}
 				
+				// 
 				if (in[1] & 0b00100000) {
+					Serial.println("Zero Altitude Pressed")
 					#ifdef HASBMP
 						bmp.resetOffset();
 					#else
 						SpecGPS::resetOffset();
 					#endif
-					Drop::droppedGlider1 = false;
-					Drop::droppedGlider2 = false;
-					Drop::droppedLHabs = false;
-					Drop::droppedRHabs = false;
-					Drop::droppedWater = false;
+					Drop::resetDroppedStatus();
 				}
-				
+
 				Drop::update();
 			}
 			if(tLastRec > 1000){
