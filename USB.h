@@ -14,7 +14,7 @@ namespace USB {
     bool waitingForSerial = false;
     long firstSerialAvailableTime;
 	
-	const int USBSerialBaudrate = 115200;
+	const int USBSerialBaudrate = 57600;
 
     void setup() {
         Serial.begin(USBSerialBaudrate);
@@ -60,6 +60,15 @@ namespace USB {
 			#else
 				SpecGPS::resetOffset();
 			#endif
+		} else if(incoming.substring(0, 3).equals("SPT")){
+			while(true){
+				while(Serial.available()){
+					Serial2.write(Serial.read());
+				}
+				while(Serial2.available()){
+					Serial.write(Serial2.read());
+				}
+			}
 		}
     }
 
