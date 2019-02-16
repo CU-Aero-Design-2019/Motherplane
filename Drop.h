@@ -111,12 +111,12 @@ namespace Drop {
 
 	void updateAuto(bool habitat = false) {
 
-		// float course = SpecGPS::gps.course.deg();
-		float course = 90;
-		// float speed = SpecGPS::gps.speed.mps();
-		float speed = 30;
-		// float alt = bmp.getKAlt();
-		float alt = 35;
+		float course = SpecGPS::gps.course.deg();
+		// float course = 90;
+		float speed = SpecGPS::gps.speed.mps();
+		// float speed = 30;
+		float alt = bmp.getKAlt();
+		// float alt = 35;
 
 		double curPredE;
 		double curPredN;

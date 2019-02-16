@@ -13,7 +13,7 @@ Updates fast enough
 
 //#define SDTELEMETRY
 //#define LOOPTRACKER
-//#define HASBMP
+#define HASBMP
 
 #include "settings.h"
 #include <Servo.h>
@@ -69,7 +69,7 @@ void setup() {
 			
 	#ifdef HASBMP
 	// bmp.begin() delays for about (35 * int)ms
-	if (!bmp.begin(50)) {
+	if (!bmp.begin(50), 0) {
         Serial.println("Could not find a valid BMP085 sensor");
     }
 	#endif
@@ -139,15 +139,15 @@ void loop() {
 		if (Drop::collectTarget) {
 			//Serial.println("Collecting Target");
 
-			Settings::nSamples++;
+			// Settings::nSamples++;
 
-			Settings::totalTargetLatitude += SpecGPS::gps.location.lat();
-			Settings::totalTargetLongitude += SpecGPS::gps.location.lng();
+			// Settings::totalTargetLatitude += SpecGPS::gps.location.lat();
+			// Settings::totalTargetLongitude += SpecGPS::gps.location.lng();
 
-			Settings::targetLatitude = Settings::totalTargetLatitude / Settings::nSamples;
-			Settings::targetLongitude = Settings::totalTargetLongitude / Settings::nSamples;
+			// Settings::targetLatitude = Settings::totalTargetLatitude / Settings::nSamples;
+			// Settings::targetLongitude = Settings::totalTargetLongitude / Settings::nSamples;
 
-			Settings::saveSettings();
+			// Settings::saveSettings();
 
 			telemetry += String(Settings::targetLatitude, 6);
 	        telemetry += " ";
@@ -161,8 +161,8 @@ void loop() {
 			
 			double lat = SpecGPS::gps.location.lat();
 			double lng = SpecGPS::gps.location.lng();
-			// double alt = bmp.getKAlt();
-			double alt = SpecGPS::getOffsetAlt();
+			double alt = bmp.getKAlt();
+			// double alt = SpecGPS::getOffsetAlt();
 			
 			SpecGPS::prevENU = SpecGPS::currentENU;
 			SpecGPS::lla_to_enu(lat, lng, alt, Settings::targetLatitude, Settings::targetLongitude);
@@ -192,12 +192,12 @@ void loop() {
 	    }
 
         // add altitude
-		// if (bmp.getKAlt() > 1000) {
-			// telemetry += String(SpecGPS::prevENU.u, 2);
-		// } else {
-			// telemetry += String(bmp.getKAlt(), 2);
-		// }
-		telemetry += SpecGPS::getOffsetAlt();
+		if (bmp.getKAlt() > 1000) {
+			telemetry += String(SpecGPS::prevENU.u, 2);
+		} else {
+			telemetry += String(bmp.getKAlt(), 2);
+		}
+		//telemetry += SpecGPS::getOffsetAlt();
         
         //telemetry += bmp.readOffsetAltitude();
 		//telemetry += bmp.readAvgOffsetAltitude();
