@@ -133,7 +133,7 @@ void loop() {
         telemetry += " ";
 
         // speed
-        telemetry += SpecGPS::gps.speed.mps();
+        telemetry += SpecGPS::gps.speed.value();
         telemetry += " ";
 		
 		if (Drop::collectTarget) {
