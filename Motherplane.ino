@@ -13,7 +13,7 @@ Updates fast enough
 
 //#define SDTELEMETRY
 //#define LOOPTRACKER
-#define HASBMP
+//#define HASBMP
 
 #include "settings.h"
 #include <Servo.h>
@@ -161,8 +161,9 @@ void loop() {
 			
 			double lat = SpecGPS::gps.location.lat();
 			double lng = SpecGPS::gps.location.lng();
-			double alt = bmp.getKAlt();
-
+			// double alt = bmp.getKAlt();
+			double alt = SpecGPS::getOffsetAlt();
+			
 			SpecGPS::prevENU = SpecGPS::currentENU;
 			SpecGPS::lla_to_enu(lat, lng, alt, Settings::targetLatitude, Settings::targetLongitude);
 			SpecGPS::currentENU.e = lat;
@@ -191,11 +192,12 @@ void loop() {
 	    }
 
         // add altitude
-		if (bmp.getKAlt() > 1000) {
-			telemetry += String(SpecGPS::prevENU.u, 2);
-		} else {
-			telemetry += String(bmp.getKAlt(), 2);
-		}
+		// if (bmp.getKAlt() > 1000) {
+			// telemetry += String(SpecGPS::prevENU.u, 2);
+		// } else {
+			// telemetry += String(bmp.getKAlt(), 2);
+		// }
+		telemetry += SpecGPS::getOffsetAlt();
         
         //telemetry += bmp.readOffsetAltitude();
 		//telemetry += bmp.readAvgOffsetAltitude();
@@ -243,7 +245,7 @@ void loop() {
 		sdt += " ";
         sdt += String(SpecGPS::gps.location.lng(), 6); // deg
         sdt += " ";
-		sdt += String(SpecGPS::gps.altitude.meters(), 1); // m
+		sdt += String(SpecGPS::getOffsetAlt(), 1); // m
         sdt += " ";
 		sdt += String(SpecGPS::gps.speed.mps(), 2); // m/s
         sdt += " ";

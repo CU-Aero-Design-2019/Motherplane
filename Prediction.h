@@ -56,9 +56,10 @@ namespace Prediction {
 		curLLA.lat = SpecGPS::gps.location.lat();
 		curLLA.lng = SpecGPS::gps.location.lng();
 		//curLLA.alt = bmp.readAvgOffsetAltitude();
-		curLLA.alt = bmp.getKAlt();
+		// curLLA.alt = bmp.getKAlt();
+		curLLA.alt = SpecGPS::getOffsetAlt();
 				
-		//SpecGPS::lla_to_enu(curLLA, tarLLA, tarECEF, curENU);
+		SpecGPS::lla_to_enu(curLLA, tarLLA, tarECEF, curENU);
 		
 		//habPrediction = makePrediction(0.12856509, true);
 		watPrediction = makePrediction(0.50121957, false);
