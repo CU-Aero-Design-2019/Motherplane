@@ -45,12 +45,12 @@ namespace Drop {
 	int habsRDropped = 150;
 	
 	//srvo 3 
-	int glider1Undropped = 0;
-	int glider1Dropped = 130;
+	int glider1Undropped = 130;
+	int glider1Dropped = 0;
 	
 	//srvo 4 
-	int glider2Undropped = 130;
-	int glider2Dropped = 0;
+	int glider2Undropped = 0;
+	int glider2Dropped = 130;
 	
 	double latSum = 0.0;
 	double lngSum = 0.0;
@@ -186,6 +186,7 @@ namespace Drop {
 				if (dropLHabs) {
 					habLServo.write(habsLDropped);
 					droppedLHabs = true;
+					Serial.println("ldrop");
 				} else {
 					habLServo.write(habsLUndropped);
 					droppedLHabs = false;
@@ -193,6 +194,7 @@ namespace Drop {
 				if (dropRHabs) {
 					habRServo.write(habsRDropped);
 					droppedRHabs = true;
+					Serial.println("rdrop");
 				} else {
 					habLServo.write(habsRUndropped);
 					droppedRHabs = false;
