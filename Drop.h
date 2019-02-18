@@ -186,7 +186,7 @@ namespace Drop {
 				if (dropLHabs) {
 					habLServo.write(habsLDropped);
 					droppedLHabs = true;
-					Serial.println("ldrop");
+					//Serial.println("ldrop");
 				} else {
 					habLServo.write(habsLUndropped);
 					droppedLHabs = false;
@@ -194,7 +194,7 @@ namespace Drop {
 				if (dropRHabs) {
 					habRServo.write(habsRDropped);
 					droppedRHabs = true;
-					Serial.println("rdrop");
+					//Serial.println("rdrop");
 				} else {
 					habLServo.write(habsRUndropped);
 					droppedRHabs = false;

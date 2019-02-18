@@ -56,9 +56,9 @@ namespace USB {
 
         }else if (incoming.substring(0, 4).equals("RBLA")) {
 			#ifdef HASBMP
-				bmp.resetOffset();
+				bmp.resetOffset(10);
 			#else
-				SpecGPS::resetOffset();
+				SpecGPS::resetOffset(10);
 			#endif
 		} else if(incoming.substring(0, 3).equals("SPT")){
 			while(true){

@@ -50,6 +50,8 @@ String telemetry;
 	long startTime;
 #endif
 
+bool hasBMPReset = false;
+int bmpStartTime;
 //unsigned long kalmanStartTime = 2147483647;
 
 void setup() {
@@ -69,9 +71,10 @@ void setup() {
 			
 	#ifdef HASBMP
 	// bmp.begin() delays for about (35 * int)ms
-	if (!bmp.begin(50), 0) {
+	if (!bmp.begin(50)) {
         Serial.println("Could not find a valid BMP085 sensor");
     }
+	bmpStartTime = millis();
 	#endif
     
     SpecRFD900::setup(&Serial3);
@@ -93,6 +96,16 @@ void loop() {
 	#ifdef LOOPTRACKER
 		startTime = millis();
 	#endif
+	
+	if (!hasBMPReset) {
+		if (millis() >= bmpStartTime + 1000) {
+			bmp.resetOffset();
+			hasBMPReset = true;
+		} else {
+			bmp.update();
+		}
+		return;
+	}
 	
     // check for incoming serial data
     SpecRFD900::update();
@@ -192,11 +205,11 @@ void loop() {
 	    }
 
         // add altitude
-		if (bmp.getKAlt() > 1000) {
-			telemetry += String(SpecGPS::prevENU.u, 2);
-		} else {
+		// if (bmp.getKAlt() > 1000) {
+			// telemetry += String(SpecGPS::prevENU.u, 2);
+		// } else {
 			telemetry += String(bmp.getKAlt(), 2);
-		}
+		// }
 		//telemetry += SpecGPS::getOffsetAlt();
         
         //telemetry += bmp.readOffsetAltitude();
