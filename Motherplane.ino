@@ -147,12 +147,10 @@ void loop() {
 		telemetry = "";
 		
         // add current time
-        telemetry += SpecGPS::gps.time.value();
-        telemetry += " ";
+        telemetry += SpecGPS::gps.time.value() + " ";
 
         // speed
-        telemetry += SpecGPS::gps.speed.mph();
-        telemetry += " ";
+        telemetry += SpecGPS::gps.speed.mph() + " ";
 		
 		if (Drop::collectTarget) {
 			//Serial.println("Collecting Target");
@@ -167,10 +165,8 @@ void loop() {
 
 			// Settings::saveSettings();
 
-			telemetry += String(Settings::targetLatitude, 6);
-	        telemetry += " ";
-	        telemetry += String(Settings::targetLongitude, 6);
-	        telemetry += " ";
+			telemetry += String(Settings::targetLatitude, 6) + " ";
+	        telemetry += String(Settings::targetLongitude, 6) + " ";
 		} else {
 			// telemetry += String(SpecGPS::gps.location.lat(), 8);
 	        // telemetry += " ";
@@ -192,15 +188,11 @@ void loop() {
 			Drop::updateAuto();
 
 			if (lat > 10000 || lat < -10000){
-				telemetry += String(lat, 4);
-				telemetry += " ";
-				telemetry += String(lng, 4);
-				telemetry += " ";
+				telemetry += String(lat, 4) + " ";
+				telemetry += String(lng, 4) + " ";
 			} else {
-				telemetry += String(lat, 4);
-				telemetry += " ";
-				telemetry += String(lng, 4);
-				telemetry += " ";
+				telemetry += String(lat, 4) + " ";
+				telemetry += String(lng, 4) + " ";
 			}
 
 			// telemetry += String(JohnnyKalman::filter_output.x_pos, 2);
@@ -213,7 +205,7 @@ void loop() {
 		// if (bmp.getKAlt() > 1000) {
 			// telemetry += String(SpecGPS::prevENU.u, 2);
 		// } else {
-			telemetry += String(bmp.getKAlt(), 2);
+			telemetry += String(bmp.getKAlt(), 2) + " ";
 		// }
 		//telemetry += SpecGPS::getOffsetAlt();
         
@@ -226,25 +218,22 @@ void loop() {
         //} else {
 			//telemetry += "0.00";
 		//}
-		telemetry += " ";
 
-        telemetry += millis()/100;
-        telemetry += " ";
+        telemetry += millis()/100 + " ";
 		
 		Prediction::update();
 		
-		telemetry += String(Prediction::watPrediction.e, 2);
-        telemetry += " ";
+		telemetry += String(Prediction::watPrediction.e, 2) + " ";
 		
-		telemetry += String(Prediction::watPrediction.n, 2);
-        telemetry += " ";
+		telemetry += String(Prediction::watPrediction.n, 2) + " ";
 		
-		telemetry += String(Drop::sendBack, HEX);
-        telemetry += " ";
+		telemetry += String(Drop::sendBack, HEX) + " ";
 		
 		//telemetry += SpecGPS::gps.course.value();
-		telemetry += SpecHMC5883::heading;
-		telemetry += " ";
+		telemetry += SpecHMC5883::heading + " ";
+
+		telemetry += String(Prediction::habPrediction.e, 2) + " ";
+		telemetry += String(Prediction::habPrediction.n, 2) + " ";
 		
         telemetry += "!";
         SpecRFD900::sendTelemetry(telemetry);
@@ -270,6 +259,8 @@ void loop() {
         sdt += " ";
 		sdt += String(bmp.getKAlt(), 2); // m
         sdt += " ";
+        sdt += String(SpecHMC5883::heading, 2); // deg
+        sdt += " ";
 		sdt += String(Prediction::watPrediction.e, 2);
 		sdt += " ";
 		sdt += String(Prediction::watPrediction.n, 2);
@@ -283,6 +274,8 @@ void loop() {
 		sdt += String(SpecGPS.currentENU.n);
 		sdt += " ";
 		sdt += String(SpecGPS.currentENU.u);
+		sdt += " ";
+		sdt += String(SpecGPS::gps.time.value());
 		sdt += " ";
 		sdt += String(millis() / 100);
         sdt += String("\n");
