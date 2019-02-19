@@ -242,11 +242,8 @@ void loop() {
 		telemetry += String(Drop::sendBack, HEX);
         telemetry += " ";
 		
-<<<<<<< HEAD
-		telemetry += SpecGPS::gps.course.value();
-=======
+		//telemetry += SpecGPS::gps.course.value();
 		telemetry += SpecHMC5883::heading;
->>>>>>> 5a8358910242df979a24d1813a7b9b98d789b31d
 		telemetry += " ";
 		
         telemetry += "!";
