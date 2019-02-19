@@ -33,7 +33,7 @@ namespace Prediction {
 	const float tDel = 0.005;
 	
 	// prototype
-	SpecGPS::ENU makePrediction(float packageMass, bool habitat);
+	SpecGPS::ENU makePrediction(bool habitat);
  
 	void setup() {
 		

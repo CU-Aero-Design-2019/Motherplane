@@ -147,10 +147,10 @@ void loop() {
 		telemetry = "";
 		
         // add current time
-        telemetry += SpecGPS::gps.time.value() + " ";
+        telemetry += String(SpecGPS::gps.time.value()) + " ";
 
         // speed
-        telemetry += SpecGPS::gps.speed.mph() + " ";
+        telemetry += String(SpecGPS::gps.speed.mph()) + " ";
 		
 		if (Drop::collectTarget) {
 			//Serial.println("Collecting Target");
@@ -219,7 +219,7 @@ void loop() {
 			//telemetry += "0.00";
 		//}
 
-        telemetry += millis()/100 + " ";
+        telemetry += String(millis()/100) + " ";
 		
 		Prediction::update();
 		
@@ -230,7 +230,7 @@ void loop() {
 		telemetry += String(Drop::sendBack, HEX) + " ";
 		
 		//telemetry += SpecGPS::gps.course.value();
-		telemetry += SpecHMC5883::heading + " ";
+		telemetry += String(SpecHMC5883::heading) + " ";
 
 		telemetry += String(Prediction::habPrediction.e, 2) + " ";
 		telemetry += String(Prediction::habPrediction.n, 2) + " ";
