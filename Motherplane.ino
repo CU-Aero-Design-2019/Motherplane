@@ -146,7 +146,7 @@ void loop() {
         telemetry += " ";
 
         // speed
-        telemetry += SpecGPS::gps.speed.value();
+        telemetry += SpecGPS::gps.speed.mph();
         telemetry += " ";
 		
 		if (Drop::collectTarget) {
@@ -237,7 +237,7 @@ void loop() {
 		telemetry += String(Drop::sendBack, HEX);
         telemetry += " ";
 		
-		telemetry += Prediction::bearing;
+		telemetry += SpecGPS::gps.course.value();
 		telemetry += " ";
 		
         telemetry += "!";
