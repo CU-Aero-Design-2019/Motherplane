@@ -30,7 +30,7 @@ namespace Prediction {
 
 	uint16_t bearing;
 	
-	const float tDel = 0.005;
+	const float tDel = 0.01;
 	
 	// prototype
 	SpecGPS::ENU makePrediction(bool habitat);
