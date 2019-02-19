@@ -61,12 +61,14 @@ namespace Prediction {
 				
 		SpecGPS::lla_to_enu(curLLA, tarLLA, tarECEF, curENU);
 		
-		//habPrediction = makePrediction(0.12856509, true);
-		watPrediction = makePrediction(0.50121957, false);
+		habPrediction = makePrediction(true);
+		watPrediction = makePrediction(false);
 	}
 	
-	SpecGPS::ENU makePrediction(float packageMass, bool habitat) {
+	SpecGPS::ENU makePrediction(bool habitat) {
 		
+		float packageMass;
+
 		float speed = SpecGPS::gps.speed.mps();
 		bearing = SpecGPS::gps.course.deg();
 		// float speed = 30;
@@ -111,6 +113,7 @@ namespace Prediction {
 			dragHorz = 0.139;
 			area_xy = 0.00541;
 			area_z = 0.018177;
+			packageMass = 0.12856509;
 			
 		} else {
 			dragVert_para = 0.128;
@@ -118,6 +121,7 @@ namespace Prediction {
 			dragHorz = 1.5;//?
 			area_xy = 0.0129;
 			area_z = 0.0032;
+			packageMass = 0.50121957;
 		}
 		
 		float ax = -(dragHorz/packageMass)*0.5*rho*area_xy*(u-uAir)*abs(u-uAir);
