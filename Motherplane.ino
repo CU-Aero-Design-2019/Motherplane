@@ -22,6 +22,7 @@ Updates fast enough
 #include <SpecMPU6050.h>
 #include "SpecRFD900.h"
 #include <SpecBMP180.h>
+#include <SpecHMC5883.h>
 #ifdef MEMORYCHECK
 	#include <MemoryFree.h>;
 #endif
@@ -65,7 +66,9 @@ void setup() {
 	
 	// USB serial setup
 	USB::setup();
-
+	
+	SpecHMC5883::setup();
+	
     // IMU setup
     //SpecMPU6050::setup();
 			
@@ -112,6 +115,8 @@ void loop() {
 	
 	USB::update();
 	
+	SpecHMC5883::update();
+	
 	// update drop values
 	Drop::update();
 
@@ -146,7 +151,7 @@ void loop() {
         telemetry += " ";
 
         // speed
-        telemetry += SpecGPS::gps.speed.value();
+        telemetry += SpecGPS::gps.speed.mph();
         telemetry += " ";
 		
 		if (Drop::collectTarget) {
@@ -237,7 +242,8 @@ void loop() {
 		telemetry += String(Drop::sendBack, HEX);
         telemetry += " ";
 		
-		telemetry += Prediction::bearing;
+		//telemetry += SpecGPS::gps.course.value();
+		telemetry += SpecHMC5883::heading;
 		telemetry += " ";
 		
         telemetry += "!";

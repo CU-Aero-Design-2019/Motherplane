@@ -4,6 +4,7 @@
  #include <SpecGPS.h>
  #include "settings.h"
  #include <SpecBMP180.h>
+ #include <SpecHMC5883.h>
  
 extern SpecBMP180 bmp;
 
@@ -70,7 +71,7 @@ namespace Prediction {
 		float packageMass;
 
 		float speed = SpecGPS::gps.speed.mps();
-		bearing = SpecGPS::gps.course.deg();
+		bearing = SpecHMC5883::heading;
 		// float speed = 30;
 		// bearing = 90;
 		
