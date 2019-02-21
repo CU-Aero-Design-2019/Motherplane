@@ -174,7 +174,6 @@ namespace Drop {
 				dropLHabs = autoDropHabs;
 				dropRHabs = autoDropHabs;
 				dropWater = autoDropWater;
-
 			} else {
 				if (dropWater) {
 					waterServo.write(waterDropped);
@@ -186,7 +185,6 @@ namespace Drop {
 				if (dropLHabs) {
 					habLServo.write(habsLDropped);
 					droppedLHabs = true;
-					//Serial.println("ldrop");
 				} else {
 					habLServo.write(habsLUndropped);
 					droppedLHabs = false;
@@ -194,9 +192,8 @@ namespace Drop {
 				if (dropRHabs) {
 					habRServo.write(habsRDropped);
 					droppedRHabs = true;
-					//Serial.println("rdrop");
 				} else {
-					habLServo.write(habsRUndropped);
+					habRServo.write(habsRUndropped);
 					droppedRHabs = false;
 				}
 				if (dropGlider1) {
@@ -216,7 +213,6 @@ namespace Drop {
 			}
 		} else {
 			if (collectTarget) {
-			//if (1) {
 				// only collect every 100ms
 				if (millis() - lastSampleTime > 100) {
 					if (SpecGPS::gps.location.lat() != 0.0) {
