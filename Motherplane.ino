@@ -11,8 +11,8 @@ Updates fast enough
 
 */
 
-//#define SDTELEMETRY
-//#define LOOPTRACKER
+#define SDTELEMETRY
+#define LOOPTRACKER
 #define HASBMP
 
 #include "settings.h"
@@ -269,15 +269,15 @@ void loop() {
 		sdt += " ";
 		sdt += String(Prediction::habPrediction.n, 2);
 		sdt += " ";
-		sdt += String(SpecGPS.currentENU.e);
+		sdt += String(SpecGPS::currentENU.e);
 		sdt += " ";
-		sdt += String(SpecGPS.currentENU.n);
+		sdt += String(SpecGPS::currentENU.n);
 		sdt += " ";
-		sdt += String(SpecGPS.currentENU.u);
+		sdt += String(SpecGPS::currentENU.u);
 		sdt += " ";
 		sdt += String(SpecGPS::gps.time.value());
-		sdt += " ";
-		sdt += String(millis() / 100);
+		// sdt += " ";
+		// sdt += String(millis());
         sdt += String("\n");
 		SpecSD::writeTelemetry(sdt);
     }
