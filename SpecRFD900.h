@@ -16,6 +16,8 @@ namespace SpecRFD900 {
 	int baudrate = 57600;
 	HardwareSerial *RFD900;
 	
+	int wasRBLA = 0;
+	
 	byte in[2];
 	char targetLatBA[12];
 	char targetLngBA[12];
@@ -162,13 +164,20 @@ namespace SpecRFD900 {
 				
 				// 
 				if (in[1] & 0b00100000) {
-					//Serial.println("Zero Altitude Pressed");
-					#ifdef HASBMP
-						bmp.resetOffset(20);
-					#else
-						SpecGPS::resetOffset();
-					#endif
-					Drop::resetDroppedStatus();
+					Serial.println("wasRBLA = " + String(wasRBLA));
+					if (wasRBLA > 2) {
+						#ifdef HASBMP
+							bmp.resetOffset(20);
+						#else
+							SpecGPS::resetOffset();
+						#endif
+						Drop::resetDroppedStatus();
+						wasRBLA = 0;
+					} else {
+						wasRBLA++;
+					}
+				} else {
+					wasRBLA = 0;
 				}
 
 				Drop::update();
