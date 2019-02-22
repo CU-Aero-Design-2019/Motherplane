@@ -12,7 +12,7 @@ Updates fast enough
 */
 
 #define SDTELEMETRY
-//#define LOOPTRACKER
+#define LOOPTRACKER
 #define HASBMP
 
 #include "settings.h"

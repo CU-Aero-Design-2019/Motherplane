@@ -62,7 +62,7 @@ namespace Prediction {
 				
 		SpecGPS::lla_to_enu(curLLA, tarLLA, tarECEF, curENU);
 		
-		habPrediction = makePrediction(true);
+		//habPrediction = makePrediction(true);
 		watPrediction = makePrediction(false);
 	}
 	
@@ -117,9 +117,9 @@ namespace Prediction {
 			packageMass = 0.12856509;
 			
 		} else {
-			dragVert_para = 0.128;
-			dragVert = 1.05;//?
-			dragHorz = 1.5;//?
+			dragVert_para = 0;
+			dragVert = 0;//?
+			dragHorz = 0;//?
 			area_xy = 0.0129;
 			area_z = 0.0032;
 			packageMass = 0.50121957;
