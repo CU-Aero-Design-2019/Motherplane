@@ -35,14 +35,14 @@ namespace USB {
 			Settings::targetLatitude = 39.747834;
 			Settings::targetLongitude = -83.812673;
 			Settings::saveSettings();
-        }else if (incoming.substring(0, 4).equals("GTAR")) {
+        } else if (incoming.substring(0, 4).equals("GTAR")) {
             Serial.println("Target Lat: " + String(Settings::targetLatitude, 8));
             Serial.println("Target Lng: " + String(Settings::targetLongitude, 8));
-        }else if (incoming.substring(0, 4).equals("SRVO")) {
+        } else if (incoming.substring(0, 4).equals("SRVO")) {
             incoming = incoming.substring(5);
             Serial.println(incoming);
 
-            if(incoming.substring(0, 4).equals("AUTO")) {
+            if (incoming.substring(0, 4).equals("AUTO")) {
                 Drop::manualServo = false;
                 return;
             }
@@ -54,22 +54,31 @@ namespace USB {
 
             Drop::manuallySet(index, val);
 
-        }else if (incoming.substring(0, 4).equals("RBLA")) {
+        } else if (incoming.substring(0, 4).equals("RBLA")) {
 			#ifdef HASBMP
 				bmp.resetOffset(10);
 			#else
 				SpecGPS::resetOffset(10);
 			#endif
-		} else if(incoming.substring(0, 3).equals("SPT")){
-			while(true){
-				while(Serial.available()){
+		} else if (incoming.substring(0, 4).equals("SPT2")){
+			while (true) {
+				while (Serial.available()){
 					Serial2.write(Serial.read());
 				}
-				while(Serial2.available()){
+				while (Serial2.available()){
 					Serial.write(Serial2.read());
 				}
 			}
-		}
+		} else if (incoming.substring(0, 4).equals("SPT3")) {
+            while (true) {
+                while (Serial.available()){
+                    Serial3.write(Serial.read());
+                }
+                while (Serial3.available()){
+                    Serial.write(Serial3.read());
+                }
+            }
+        }
     }
 
     // to be called at a regular interval

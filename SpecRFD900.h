@@ -19,16 +19,9 @@ namespace SpecRFD900 {
 	int wasRBLA = 0;
 	
 	byte in[2];
+	byte oldIn[2];
 	char targetLatBA[12];
 	char targetLngBA[12];
-
-	void setRadioParams() {
-		delay(1001);
-		RFD900->print("+++");
-		delay(1001);
-		RFD900->print("ATI");
-		RFD900->print("ATO");
-	}
 	
 	void setup(HardwareSerial *serial) {
 		RFD900 = serial;
@@ -50,18 +43,19 @@ namespace SpecRFD900 {
 			in[0] = RFD900->read();
 			in[1] = RFD900->read();
 			
-			
-			
 			//Serial.println(String(in[0],HEX) + " " + String(in[1],HEX));
 
 			bool goodTransmission = true;
 			if (in[0] & 0b10000000 && in[1] & 0b10000000) {
 				goodTransmission = false;
-				Serial.println("Good Transmission = false");
+				Serial.println("Bad Transmission1: " + String(in[0], HEX));
 			}
 			if ((in[0] | 0b01111111) == 0b11111111 && (in[1] | 0b01111111) == 0b11111111) {
 				goodTransmission = false;
-				Serial.println("Good Transmission = false");
+				Serial.println("Bad Transmission2: " + String(in[0], HEX));
+			}
+			if (in[0] & 0b10000000) {
+				goodTransmission = false;
 			}
 			
 			if (goodTransmission) {
@@ -107,11 +101,12 @@ namespace SpecRFD900 {
 				// }
 				
 				// swap things if needed
-				if (in[0] & 0b10000000) {
-					byte temp = in[0];
-					in[0] = in[1];
-					in[1] = temp;
-				}
+				// if (in[0] & 0b10000000) {
+				// 	byte temp = in[0];
+				// 	in[1] = in[0];
+				// 	in[0] = in[1];
+				// 	return;
+				// }
 
 				if (in[0] & 0b01000000) {
 					//Serial.println("Set Origin Checked");
@@ -164,7 +159,7 @@ namespace SpecRFD900 {
 				
 				// 
 				if (in[1] & 0b00100000) {
-					Serial.println("wasRBLA = " + String(wasRBLA));
+					//Serial.println("wasRBLA = " + String(wasRBLA));
 					if (wasRBLA > 2) {
 						#ifdef HASBMP
 							bmp.resetOffset(20);
@@ -181,9 +176,6 @@ namespace SpecRFD900 {
 				}
 
 				Drop::update();
-			}
-			if(tLastRec > 1000){
-				in[0] = 0;
 			}
 		}
 	}

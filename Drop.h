@@ -33,15 +33,15 @@ namespace Drop {
 	byte sendBack = 0;
 	
 	//srvo 0 
-	int waterUndropped = 70;
-	int waterDropped = 115;
+	int waterUndropped = 115;
+	int waterDropped = 50;
 	
 	//srvo 1 
-	int habsLUndropped = 50;
+	int habsLUndropped = 30;
 	int habsLDropped = 150;
 
 	//srvo 2 
-	int habsRUndropped = 50;
+	int habsRUndropped = 30;
 	int habsRDropped = 150;
 	
 	//srvo 3 
@@ -184,6 +184,7 @@ namespace Drop {
 				}
 				if (dropLHabs) {
 					habLServo.write(habsLDropped);
+					Serial.println("hab l drop");
 					droppedLHabs = true;
 				} else {
 					habLServo.write(habsLUndropped);
@@ -191,6 +192,7 @@ namespace Drop {
 				}
 				if (dropRHabs) {
 					habRServo.write(habsRDropped);
+					Serial.println("hab r drop");
 					droppedRHabs = true;
 				} else {
 					habRServo.write(habsRUndropped);
