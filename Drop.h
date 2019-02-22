@@ -33,16 +33,16 @@ namespace Drop {
 	byte sendBack = 0;
 	
 	//srvo 0 
-	int waterUndropped = 115;
+	int waterUndropped = 90;
 	int waterDropped = 50;
 	
 	//srvo 1 
-	int habsLUndropped = 30;
-	int habsLDropped = 150;
+	int habsLUndropped = 50;
+	int habsLDropped = 130;
 
 	//srvo 2 
-	int habsRUndropped = 30;
-	int habsRDropped = 150;
+	int habsRUndropped = 50;
+	int habsRDropped = 130;
 	
 	//srvo 3 
 	int glider1Undropped = 130;

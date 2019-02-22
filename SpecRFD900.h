@@ -37,13 +37,9 @@ namespace SpecRFD900 {
 	void update() {
 		if (RFD900->available()) {
 			tLastRec = millis();
-			// flush out if we have too many things
-			//while (RFD900->available() > 2) Serial.println(RFD900->read());
 			
 			in[0] = RFD900->read();
 			in[1] = RFD900->read();
-			
-			//Serial.println(String(in[0],HEX) + " " + String(in[1],HEX));
 
 			bool goodTransmission = true;
 			if (in[0] & 0b10000000 && in[1] & 0b10000000) {
@@ -55,6 +51,10 @@ namespace SpecRFD900 {
 				Serial.println("Bad Transmission2: " + String(in[0], HEX));
 			}
 			if (in[0] & 0b10000000) {
+				goodTransmission = false;
+			}
+
+			if (in[1] == 0xFF) {
 				goodTransmission = false;
 			}
 			
@@ -147,6 +147,7 @@ namespace SpecRFD900 {
 				
 				if (in[1] & 0b00000010) {
 					Drop::dropRHabs = true;
+					Serial.println(in[1], HEX);
 				} else {
 					Drop::dropRHabs = false;
 				}
