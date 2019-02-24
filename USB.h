@@ -32,8 +32,8 @@ namespace USB {
             Serial.println(y);
             String z = incoming.substring(6,7);
             Serial.println(z);
-			Settings::targetLatitude = 39.747834;
-			Settings::targetLongitude = -83.812673;
+			Settings::targetLatitude = 39.77377;
+			Settings::targetLongitude = -84.09947;
 			Settings::saveSettings();
         } else if (incoming.substring(0, 4).equals("GTAR")) {
             Serial.println("Target Lat: " + String(Settings::targetLatitude, 8));

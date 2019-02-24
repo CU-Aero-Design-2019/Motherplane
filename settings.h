@@ -50,8 +50,8 @@ namespace Settings {
 		}
 		
 		if (loaded.targetLatitude < 1 || isnan(loaded.targetLatitude)) {
-			loaded.targetLatitude = 39.747834;
-			loaded.targetLongitude = -83.812673;
+			loaded.targetLatitude = 39.77377;
+			loaded.targetLongitude = -83.09947;
 			loaded.targetAltitude = 0.0;
 		}
 		

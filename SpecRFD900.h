@@ -35,6 +35,16 @@ namespace SpecRFD900 {
 	
 	// to be called at a regular interval
 	void update() {
+
+		// while (RFD900->available()) {
+		// 	byte b = RFD900->read();
+		// 	if (b & 0b10000000 > 0) {
+		// 		in[1] = b;
+		// 	} else {
+		// 		in[0] = b;
+		// 	}
+		// }
+
 		if (RFD900->available()) {
 			tLastRec = millis();
 			
