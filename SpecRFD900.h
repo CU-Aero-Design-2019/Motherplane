@@ -3,7 +3,7 @@
 
 #include "Drop.h"
 #include "Settings.h"
-#include <JohnnyKalman.h>
+//#include <JohnnyKalman.h>
 #include <SpecGPS.h>
 #include <SpecBMP180.h>
 

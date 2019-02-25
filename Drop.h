@@ -111,9 +111,9 @@ namespace Drop {
 
 	void updateAuto(bool habitat = false) {
 
-		float course = SpecGPS::gps.course.deg();
+		float course = SpecGPS::ubg.getMotionHeading_deg();
 		// float course = 90;
-		float speed = SpecGPS::gps.speed.mps();
+		float speed = SpecGPS::ubg.getGroundSpeed_ms();
 		// float speed = 30;
 		float alt = bmp.getKAlt();
 		// float alt = 35;
@@ -217,10 +217,10 @@ namespace Drop {
 			if (collectTarget) {
 				// only collect every 100ms
 				if (millis() - lastSampleTime > 100) {
-					if (SpecGPS::gps.location.lat() != 0.0) {
-						latSum += SpecGPS::gps.location.lat();
-						lngSum += SpecGPS::gps.location.lng();
-						altSum += SpecGPS::gps.altitude.meters();
+					if (SpecGPS::ubg.getLatitude_deg() > 0.1) {
+						latSum += SpecGPS::ubg.getLatitude_deg();
+						lngSum += SpecGPS::ubg.getLongitude_deg();
+						altSum += SpecGPS::ubg.getMSLHeight_m();
 						nLocationSamples++;
 						// change the vars that are in memory
 						Settings::targetLatitude = latSum / nLocationSamples;
@@ -232,6 +232,8 @@ namespace Drop {
 						
 						// save those vars to eeprom
 						Settings::saveSettings();
+
+						Prediction::setup();
 						
 						lastSampleTime = millis();
 					}

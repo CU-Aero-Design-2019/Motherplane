@@ -1,10 +1,12 @@
- #ifndef PREDICTION
- #define PREDICTION
- 
- #include <SpecGPS.h>
- #include "settings.h"
- #include <SpecBMP180.h>
- #include <SpecHMC5883.h>
+#ifndef PREDICTION
+#define PREDICTION
+
+#define SIMPLE_PREDICTION
+
+#include <SpecGPS.h>
+#include "settings.h"
+#include <SpecBMP180.h>
+#include <SpecHMC5883.h>
  
 extern SpecBMP180 bmp;
 
@@ -15,7 +17,6 @@ namespace Prediction {
 	
 	SpecGPS::ENU curENU;
 	SpecGPS::LLA curLLA;
-	SpecGPS::LLA prevLLA;
 	
 	SpecGPS::ECEF tarECEF;
 	SpecGPS::LLA tarLLA;
@@ -50,39 +51,29 @@ namespace Prediction {
 	
 	void update() {
 
-		prevLLA = curLLA;
-
 		prevLat = curLLA.lat;
 		prevLng = curLLA.lng;
 		prevAlt = curLLA.alt;
 
 		prevE = curENU.e;
 		prevN = curENU.n;
-				
-		//update current LLA
-		curLLA.lat = SpecGPS::gps.location.lat();
-		curLLA.lng = SpecGPS::gps.location.lng();
-		//curLLA.alt = bmp.readAvgOffsetAltitude();
-		curLLA.alt = bmp.getKAlt();
-		// curLLA.alt = SpecGPS::getOffsetAlt();
 
-		// Serial.println(String(prevLat, 6) + " " + String(prevLng, 6) + " " + String(prevAlt, 6) + " ");
-		// Serial.println(String(curLLA.lat, 6) + " " + String(curLLA.lng, 6) + " " + String(curLLA.alt, 6) + " ");
-				
+		curLLA.lat = SpecGPS::ubg.getLatitude_deg();
+		curLLA.lng = SpecGPS::ubg.getLongitude_deg();
+		curLLA.alt = bmp.getKAlt();
+
 		SpecGPS::lla_to_enu(curLLA, tarLLA, tarECEF, curENU);
 
-		if (!SpecGPS::equals(curLLA, prevLLA)) {
-			//bearing = SpecGPS::bearing(prevLLA.lat, prevLLA.lng, curLLA.lat, curLLA.lng);
-			bearing = atan((curENU.e-prevE)/(curENU.n-prevN));
-		}
+		bearing = SpecGPS::ubg.getMotionHeading_deg();
 		
 		habPrediction = makePrediction(true);
 		watPrediction = makePrediction(false);
+
 	}
 	
 	SpecGPS::ENU makePrediction(bool habitat) {
-	
-		float speed = SpecGPS::gps.speed.mps();
+	#ifdef SIMPLE_PREDICTION
+		float speed = SpecGPS::ubg.getGroundSpeed_ms();
 
 		float a = -9.8/2;
 		float b = 0;
@@ -96,8 +87,6 @@ namespace Prediction {
 			fallTime += 0.9;
 		}
 
-		
-
 		float velE = speed * sin(bearing / 180 * 3.14159);
 		float velN = speed * cos(bearing / 180 * 3.14159);
 
@@ -110,108 +99,81 @@ namespace Prediction {
 
 		return prediction;
 
-	// 	float packageMass;
+	#else
 
-	// 	float speed = SpecGPS::gps.speed.mps();
-	// 	bearing = SpecHMC5883::heading;
-	// 	// float speed = 30;
-	// 	// bearing = 90;
+		float speed = SpecGPS::gps.speed.mps();
 		
-	// 	float x = curENU.e;
- //        float y = curENU.n;
- //        float z = curENU.u;
- //        // float x = -50;
- //        // float y = 0;
- //        // float z = 35;
+		float x = curENU.e;
+        float y = curENU.n;
+        float z = curENU.u;
 		
-	// 	// find initial velocity from speed and bearing
- //        float u = speed * cos(bearing * 180 / 3.14159265);
- //        float v = speed * sin(bearing * 180 / 3.14159265);
- //        float w = 0;
-	// 	// float u = JohnnyKalman::filter_output.x_vel;
-	// 	// float v = JohnnyKalman::filter_output.y_vel;
-	// 	// float w = JohnnyKalman::filter_output.z_vel;
+		// find initial velocity from speed and bearing
+        float u = speed * cos(bearing * 180 / 3.14159265);
+        float v = speed * sin(bearing * 180 / 3.14159265);
+        float w = 0;
 		
-	// 	//float groundAirSpeedOffset = 2;
+		float rho = 2.699;
+		float area_z_para = 0.2919;
+		float habDelay = 1.52;
+		float waterDelay = 0.87;
 		
-	// 	float uAir = 0;
-	// 	float vAir = 0;
-		
-	// 	float dragVert; // new
-	// 	float dragHorz; // new
-	// 	float rho = 2.699;
-	// 	float area_xy;
-	// 	float area_z;
-	// 	float dragVert_para;
-	// 	float area_z_para = 0.2919;
+		float dragVert;
+		float dragHorz;
+		float packageMass;
+		float area_xy;
+		float area_z;
+		float dragVert_para;
 
-	// 	float habDelay = 1.52;
-	// 	float waterDelay = 0.87;
-
-	// 	// true - habitat, false - water bottles
-	// 	// new
-	// 	if (habitat == true) {
-	// 		dragVert_para = 0;
-	// 		dragVert = 0.764;
-	// 		dragHorz = 0.139;
-	// 		area_xy = 0.00541;
-	// 		area_z = 0.018177;
-	// 		packageMass = 0.12856509;
-			
-	// 	} else {
-	// 		dragVert_para = 0;
-	// 		dragVert = 0;//?
-	// 		dragHorz = 0;//?
-	// 		area_xy = 0.0129;
-	// 		area_z = 0.0032;
-	// 		packageMass = 0.50121957;
-	// 	}
+		// true - habitat, false - water bottles
+		if (habitat == true) {
+			dragVert_para = 0;
+			dragVert = 0.764;
+			dragHorz = 0.139;
+			area_xy = 0.00541;
+			area_z = 0.018177;
+			packageMass = 0.12856509;
+		} else {
+			dragVert_para = 0.128;
+			dragVert = 1.05;
+			dragHorz = 1.5;
+			area_xy = 0.0129;
+			area_z = 0.0032;
+			packageMass = 0.50121957;
+		}
 		
-	// 	float ax = -(dragHorz/packageMass)*0.5*rho*area_xy*(u-uAir)*abs(u-uAir);
- //        float ay = -(dragHorz/packageMass)*0.5*rho*area_xy*(v-vAir)*abs(v-vAir);
- //        float az = -9.807 + 0.5*rho*w*w*(dragVert_para * area_z_para + dragVert * area_z);
+		float ax = -(dragHorz/packageMass)*0.5*rho*area_xy*u*abs(u);
+        float ay = -(dragHorz/packageMass)*0.5*rho*area_xy*v*abs(v);
+        float az = -9.807 + 0.5*rho*w*w*(dragVert_para * area_z_para + dragVert * area_z);
 		
-	// 	int count = 0;
- //        while (z > 0){
- //            count++;
- //            x = u*tDel + x;
-	// 		//Serial.println(x);
- //            y = v*tDel + y;
- //            z = w*tDel + z;
+        while (z > 0){
+            x = u*tDel + x;
+            y = v*tDel + y;
+            z = w*tDel + z;
             
- //            u = u + (ax*tDel);
- //            v = v + (ay*tDel);
- //            w = w + (az*tDel);
+            u = u + (ax*tDel);
+            v = v + (ay*tDel);
+            w = w + (az*tDel);
             
- //            ax = -(dragHorz/packageMass)*0.5*rho*area_xy*(u-uAir)*abs(u-uAir);
-	// 		ay = -(dragHorz/packageMass)*0.5*rho*area_xy*(v-vAir)*abs(v-vAir);
-	// 		az = -9.807 + 0.5*rho*w*w*(dragVert_para * area_z_para + dragVert * area_z);
- //        }
+            ax = -(dragHorz/packageMass)*0.5*rho*area_xy*u*abs(u);
+			ay = -(dragHorz/packageMass)*0.5*rho*area_xy*v*abs(v);
+			az = -9.807 + 0.5*rho*w*w*(dragVert_para * area_z_para + dragVert * area_z);
+        }
 		
-	// 	SpecGPS::ENU prediction;
-		
-	// 	// prediction.e = x;
-	// 	// prediction.n = y;
-	// 	// prediction.u = z;
+		SpecGPS::ENU prediction;
 
-	// 	if (habitat) {
-	// 		prediction.e = x + habDelay * u;
-	// 		prediction.n = y + habDelay * v;
-	// 		prediction.u = z;
-	// 	} else {
-	// 		prediction.e = x + waterDelay * u;
-	// 		prediction.n = y + waterDelay * v;
-	// 		prediction.u = z;
-	// 	}
-		
-	// 	// Serial.println("fake e: " + String(fake) + " prediction e: " + String(prediction.e) + " speed: " + String(fakeSpeed) + " difference:" + String(fake - prediction.e));
-		
-	// 	return prediction;
-		
-	// 	// Serial.println("E: " + String(prediction.e, 9));
-	// 	// Serial.println("N: " + String(prediction.n, 9));
-	// 	// Serial.println("U: " + String(prediction.u, 2));
-		
+		if (habitat) {
+			prediction.e = x + habDelay * u;
+			prediction.n = y + habDelay * v;
+			prediction.u = z;
+		} else {
+			prediction.e = x + waterDelay * u;
+			prediction.n = y + waterDelay * v;
+			prediction.u = z;
+		}
+					
+		return prediction;
+
+	#endif
 	}
  
  };

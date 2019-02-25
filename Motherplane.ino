@@ -19,7 +19,6 @@ Updates fast enough
 #include <Servo.h>
 #include "constants.h"
 #include <SpecGPS.h>
-//#include <SpecMPU6050.h>
 #include "SpecRFD900.h"
 #include <SpecBMP180.h>
 #include <SpecHMC5883.h>
@@ -36,14 +35,13 @@ Updates fast enough
 
 SpecBMP180 bmp;
 
-//#include <JohnnyKalman.h>
 #include "Prediction.h"
 
-// String to write telemetry to which will be sent to ground station
+// String to write telemetry to which will be sent to ground station.
+// Done this way so that we can construct the string once then print to USB and RFD.
 String telemetry;
 
 #ifdef SDTELEMETRY
-	// String to write telemetry to which will be sent to SD card
 	String sdt;
 #endif
 
@@ -53,33 +51,30 @@ String telemetry;
 
 bool hasBMPReset = false;
 int bmpStartTime;
-//unsigned long kalmanStartTime = 2147483647;
 
 void setup() {
 	
-	delay(2000);
+	// this gives you time to open the serial monitor
+	delay(1000);
 	
-    // GPS setup
     SpecGPS::setup();
 	
 	Drop::setup();
 	
-	// USB serial setup
 	USB::setup();
 	
 	SpecHMC5883::setup();
 			
 	#ifdef HASBMP
-	// bmp.begin() delays for about (35 * int)ms
-	if (!bmp.begin(50)) {
-        Serial.println("Could not find a valid BMP085 sensor");
-    }
-	bmpStartTime = millis();
+		// bmp.begin() delays for about (35 * int)ms
+		if (!bmp.begin(50)) {
+	        Serial.println("Could not find a valid BMP085 sensor");
+	    }
+		bmpStartTime = millis();
 	#endif
     
     SpecRFD900::setup(&Serial3);
 	
-	// load settings from EEPROM
     Settings::loadSettings();
 	
 	Prediction::setup();
@@ -87,8 +82,6 @@ void setup() {
 	#ifdef SDTELEMETRY
 		SpecSD::setup("test");
 	#endif
-
-	//Serial.println("end setup");
 }
 
 void loop() {
@@ -107,14 +100,12 @@ void loop() {
 		return;
 	}
 	
-    // check for incoming serial data
     SpecRFD900::update();
 	
 	USB::update();
 	
 	SpecHMC5883::update();
 	
-	// update drop values
 	Drop::update();
 
 	// must update prediction before this
@@ -123,38 +114,31 @@ void loop() {
     // needs to be constantly fed with gps data
     SpecGPS::update();
 	
-	// updates the kalman filter on the baro
 	#ifdef HASBMP
+		// updates the kalman filter on the baro
 		bmp.update();
 	#endif
 
     if (millis() > SpecRFD900::UpdateTimer) {
         SpecRFD900::UpdateTimer = millis() + 100;
 
-		//Serial.print(SpecGPS::gps.satellites.value()); Serial.print(" ");
+        Serial.print(SpecGPS::ubg.getNumSatellites());
 		
 		telemetry = "";
 		
-        // add current time
-        telemetry += String(SpecGPS::gps.time.value()) + " ";
+        telemetry += String(SpecGPS::ubg.getDay()) + String(SpecGPS::ubg.getHour()) + String(SpecGPS::ubg.getMin()) + 
+        			 String(SpecGPS::ubg.getSec()) + String(SpecGPS::ubg.getNanoSec()) + " ";
 
-        // speed
-        telemetry += String(SpecGPS::gps.speed.mph()) + " ";
+        telemetry += String(SpecGPS::ubg.getGroundSpeed_ms()) + " ";
 		
 		if (Drop::collectTarget) {
-
 			telemetry += String(Settings::targetLatitude, 6) + " ";
 	        telemetry += String(Settings::targetLongitude, 6) + " ";
 		} else {
-			
-			double lat = SpecGPS::gps.location.lat();
-			double lng = SpecGPS::gps.location.lng();
+			double lat = SpecGPS::ubg.getLatitude_deg();
+			double lng = SpecGPS::ubg.getLongitude_deg();
 			double alt = bmp.getKAlt();
-			// double alt = SpecGPS::getOffsetAlt();
-			
-			// Serial.println(String(SpecGPS::prevENU.e, 1) + String(SpecGPS::prevENU.n, 1) + String(SpecGPS::prevENU.u, 1));
-			// Serial.println(String(SpecGPS::currentENU.e, 1) + String(SpecGPS::currentENU.n, 1) + String(SpecGPS::currentENU.u, 1));
-			
+
 			SpecGPS::lla_to_enu(lat, lng, alt, Settings::targetLatitude, Settings::targetLongitude);
 			SpecGPS::currentENU.e = lat;
 			SpecGPS::currentENU.n = lng;
@@ -169,7 +153,6 @@ void loop() {
 				telemetry += String(lat, 4) + " ";
 				telemetry += String(lng, 4) + " ";
 			}
-
 	    }
 
 		telemetry += String(bmp.getKAlt(), 2) + " ";
@@ -182,7 +165,6 @@ void loop() {
 		
 		telemetry += String(Drop::sendBack, HEX) + " ";
 		
-		//telemetry += SpecGPS::gps.course.value();
 		telemetry += String(Prediction::bearing) + " ";
 
 		telemetry += String(Prediction::habPrediction.e, 2) + " ";
@@ -202,13 +184,13 @@ void loop() {
     if (millis() > SpecSD::UpdatePeriod) {
         SpecSD::UpdateTimer = millis() + 100;
 		sdt = "";
-		sdt += String(SpecGPS::gps.location.lat(), 6);
+		sdt += String(SpecGPS::ubg.getLatitude_deg(), 6);
 		sdt += " ";
-        sdt += String(SpecGPS::gps.location.lng(), 6); // deg
+        sdt += String(SpecGPS::ubg.getLongitude_deg(), 6); // deg
         sdt += " ";
 		sdt += String(SpecGPS::getOffsetAlt(), 1); // m
         sdt += " ";
-		sdt += String(SpecGPS::gps.speed.mps(), 2); // m/s
+		sdt += String(SpecGPS::ubg.getGroundSpeed_ms(), 2); // m/s
         sdt += " ";
 		sdt += String(bmp.getKAlt(), 2); // m
         sdt += " ";
@@ -228,7 +210,7 @@ void loop() {
 		sdt += " ";
 		sdt += String(SpecGPS::currentENU.u);
 		sdt += " ";
-		sdt += String(SpecGPS::gps.time.value());
+		sdt += String(SpecGPS::ubg.getTow_ms());
 		// sdt += " ";
 		// sdt += String(millis());
         sdt += String("\n");
