@@ -21,7 +21,6 @@ Updates fast enough
 #include <SpecGPS.h>
 #include "SpecRFD900.h"
 #include <SpecBMP180.h>
-#include <SpecHMC5883.h>
 #ifdef MEMORYCHECK
 	#include <MemoryFree.h>;
 #endif
@@ -62,9 +61,7 @@ void setup() {
 	Drop::setup();
 	
 	USB::setup();
-	
-	SpecHMC5883::setup();
-			
+				
 	#ifdef HASBMP
 		// bmp.begin() delays for about (35 * int)ms
 		if (!bmp.begin(50)) {
@@ -82,6 +79,8 @@ void setup() {
 	#ifdef SDTELEMETRY
 		SpecSD::setup("test");
 	#endif
+	
+	Serial.println("done setup");
 }
 
 void loop() {
@@ -103,9 +102,7 @@ void loop() {
     SpecRFD900::update();
 	
 	USB::update();
-	
-	SpecHMC5883::update();
-	
+		
 	Drop::update();
 
 	// must update prediction before this
@@ -127,7 +124,7 @@ void loop() {
 		telemetry = "";
 		
         telemetry += String(SpecGPS::ubg.getDay()) + String(SpecGPS::ubg.getHour()) + String(SpecGPS::ubg.getMin()) + 
-        			 String(SpecGPS::ubg.getSec()) + String(SpecGPS::ubg.getNanoSec()) + " ";
+        			 String(SpecGPS::ubg.getSec()) + String(SpecGPS::ubg.getNanoSec()).substring(0, 1) + " ";
 
         telemetry += String(SpecGPS::ubg.getGroundSpeed_ms()) + " ";
 		
