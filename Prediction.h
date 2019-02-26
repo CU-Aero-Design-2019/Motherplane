@@ -136,7 +136,7 @@ namespace Prediction {
 
 	#else
 
-		float speed = SpecGPS::gps.speed.mps();
+		float speed = SpecGPS::ubg.getGroundSpeed_ms();
 		
 		float x = curENU.e;
         float y = curENU.n;
