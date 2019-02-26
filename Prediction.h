@@ -1,7 +1,7 @@
 #ifndef PREDICTION
 #define PREDICTION
 
-#define SIMPLE_PREDICTION
+//#define SIMPLE_PREDICTION
 
 #include <SpecGPS.h>
 #include "settings.h"

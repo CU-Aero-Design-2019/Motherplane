@@ -51,6 +51,8 @@ String telemetry;
 bool hasBMPReset = false;
 int bmpStartTime;
 
+bool switchControl = false;
+
 void setup() {
 	
 	// this gives you time to open the serial monitor
@@ -75,6 +77,12 @@ void setup() {
     Settings::loadSettings();
 	
 	Prediction::setup();
+	
+	pinMode(PB15, INPUT_PULLUP);
+	
+	if (digitalRead(PB15) == LOW) {
+		switchControl = true;
+	}
 
 	#ifdef SDTELEMETRY
 		SpecSD::setup("test");
@@ -88,6 +96,14 @@ void loop() {
 	#ifdef LOOPTRACKER
 		startTime = millis();
 	#endif
+	
+	if (switchControl) {
+		if (digitalRead(PB15) == HIGH) {
+			Serial.println("high");
+		} else {
+			Serial.println("low");
+		}
+	}
 	
 	if (!hasBMPReset) {
 		if (millis() >= bmpStartTime + 1000) {
