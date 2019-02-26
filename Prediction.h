@@ -44,6 +44,7 @@ namespace Prediction {
 	
 	// prototype
 	SpecGPS::ENU makePrediction(bool habitat);
+	void updateAverageHeading();
  
 	void setup() {
 		
