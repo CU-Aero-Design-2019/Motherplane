@@ -108,8 +108,8 @@ namespace Prediction {
         float z = curENU.u;
 		
 		// find initial velocity from speed and bearing
-        float u = speed * cos(bearing * 180 / 3.14159265);
-        float v = speed * sin(bearing * 180 / 3.14159265);
+        float u = speed * cos(bearing / 180 * 3.14159265);
+        float v = speed * sin(bearing / 180 * 3.14159265);
         float w = 0;
 		
 		float rho = 2.699;
