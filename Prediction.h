@@ -1,7 +1,7 @@
 #ifndef PREDICTION
 #define PREDICTION
 
-#define SIMPLE_PREDICTION
+//#define SIMPLE_PREDICTION
 
 #include <SpecGPS.h>
 #include "settings.h"
@@ -34,8 +34,17 @@ namespace Prediction {
 	
 	const float tDel = 0.01;
 	
+	// heading average
+	const int numSamps = 10;
+	float cosines[numSamps];
+	float sines[numSamps];
+	float cosineSum = 0;
+	float sineSum = 0;
+	int sampleCount = 0;
+	
 	// prototype
 	SpecGPS::ENU makePrediction(bool habitat);
+	void updateAverageHeading();
  
 	void setup() {
 		
@@ -64,11 +73,37 @@ namespace Prediction {
 
 		SpecGPS::lla_to_enu(curLLA, tarLLA, tarECEF, curENU);
 
-		bearing = SpecGPS::ubg.getMotionHeading_deg();
+		//bearing = SpecGPS::ubg.getMotionHeading_deg();
+		updateAverageHeading();
 		
 		habPrediction = makePrediction(true);
 		watPrediction = makePrediction(false);
 
+	}
+	
+	void updateAverageHeading(){		
+		cosineSum -= cosines[sampleCount];
+		sineSum -= sines[sampleCount];
+		
+		cosines[sampleCount] = cos(SpecGPS::ubg.getMotionHeading_rad());
+		sines[sampleCount] = sin(SpecGPS::ubg.getMotionHeading_rad());
+		
+		cosineSum += cosines[sampleCount];
+		sineSum += sines[sampleCount];
+		
+		float avgCos = cosineSum/numSamps;
+		float avgSin = sineSum/numSamps;
+		
+		float theta = atan(avgSin/avgCos) * RAD_TO_DEG;
+		
+		if(avgCos < 0.0){
+			theta += 180;
+		}else if(avgSin < 0.0){
+			theta +=360;
+		}
+		sampleCount++;
+		sampleCount = sampleCount%numSamps;
+		bearing = theta;
 	}
 	
 	SpecGPS::ENU makePrediction(bool habitat) {
@@ -101,7 +136,7 @@ namespace Prediction {
 
 	#else
 
-		float speed = SpecGPS::gps.speed.mps();
+		float speed = SpecGPS::ubg.getGroundSpeed_ms();
 		
 		float x = curENU.e;
         float y = curENU.n;
