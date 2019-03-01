@@ -143,8 +143,8 @@ namespace Prediction {
         float z = curENU.u;
 		
 		// find initial velocity from speed and bearing
-        float u = speed * cos(bearing / 180 * 3.14159265);
-        float v = speed * sin(bearing / 180 * 3.14159265);
+        float u = speed * sin(bearing / 180 * 3.14159265);
+        float v = speed * cos(bearing / 180 * 3.14159265);
         float w = 0;
 		
 		float rho = 2.699;
@@ -168,11 +168,11 @@ namespace Prediction {
 			area_z = 0.018177;
 			packageMass = 0.12856509;
 		} else {
-			dragVert_para = 0.128;
+			dragVert_para = 1.5;//0.128;
 			dragVert = 1.05;
 			dragHorz = 1.5;
-			area_xy = 0.0129;
-			area_z = 0.0032;
+			area_xy = 0.0108;
+			area_z = 0.0034;
 			packageMass = 0.50121957;
 		}
 		
