@@ -29,6 +29,8 @@ namespace Drop {
 	bool autoDropWater = false;
 	bool autoDropHabs = false;
 	bool autoDropGliders = false;
+
+	bool switchControl = false;
 	
 	byte sendBack = 0;
 	
@@ -168,8 +170,24 @@ namespace Drop {
 	}
 	
 	void update() {
-	
-		if (dropArmed && !manualServo) {
+		if (switchControl) {
+			Serial.println("Switch Control");
+			if (digitalRead(PA10) == LOW) {
+				// open all
+				waterServo.write(waterDropped);
+				habLServo.write(habsLDropped);
+				habRServo.write(habsRDropped);
+				glider1Servo.write(glider1Dropped);
+				glider2Servo.write(glider2Dropped);
+			} else {
+				// close all
+				waterServo.write(waterUndropped);
+				habLServo.write(habsLUndropped);
+				habRServo.write(habsRUndropped);
+				glider1Servo.write(glider1Undropped);
+				glider2Servo.write(glider2Undropped);
+			}
+		} else if (dropArmed && !manualServo) {
 			if (autoDrop) {
 				dropLHabs = autoDropHabs;
 				dropRHabs = autoDropHabs;

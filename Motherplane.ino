@@ -51,8 +51,6 @@ String telemetry;
 bool hasBMPReset = false;
 int bmpStartTime;
 
-bool switchControl = false;
-
 void setup() {
 	
 	// this gives you time to open the serial monitor
@@ -78,10 +76,10 @@ void setup() {
 	
 	Prediction::setup();
 	
-	pinMode(PB15, INPUT_PULLUP);
+	pinMode(PA10, INPUT_PULLUP);
 	
-	if (digitalRead(PB15) == LOW) {
-		switchControl = true;
+	if (digitalRead(PA10) == LOW) {
+		Drop::switchControl = true;
 	}
 
 	#ifdef SDTELEMETRY
@@ -96,14 +94,6 @@ void loop() {
 	#ifdef LOOPTRACKER
 		startTime = millis();
 	#endif
-	
-	if (switchControl) {
-		if (digitalRead(PB15) == HIGH) {
-			Serial.println("high");
-		} else {
-			Serial.println("low");
-		}
-	}
 	
 	if (!hasBMPReset) {
 		if (millis() >= bmpStartTime + 1000) {
@@ -135,14 +125,14 @@ void loop() {
     if (millis() > SpecRFD900::UpdateTimer) {
         SpecRFD900::UpdateTimer = millis() + 100;
 
-        //Serial.print(SpecGPS::ubg.getNumSatellites());
+        Serial.print(SpecGPS::ubg.getNumSatellites());
 		
 		telemetry = "";
 		
-        //telemetry += String(SpecGPS::ubg.getDay()) + String(SpecGPS::ubg.getHour()) + String(SpecGPS::ubg.getMin()) + 
-        			 //String(SpecGPS::ubg.getSec()) + String(SpecGPS::ubg.getNanoSec()).substring(0, 1) + " ";
+        telemetry += String(SpecGPS::ubg.getDay()) + String(SpecGPS::ubg.getHour()) + String(SpecGPS::ubg.getMin()) + 
+        			 String(SpecGPS::ubg.getSec()) + String(SpecGPS::ubg.getNanoSec()).substring(0, 1) + " ";
 
-        //telemetry += String(SpecGPS::ubg.getGroundSpeed_ms()) + " ";
+        telemetry += String(SpecGPS::ubg.getGroundSpeed_ms()) + " ";
 		
 		if (Drop::collectTarget) {
 			telemetry += String(Settings::targetLatitude, 6) + " ";
@@ -160,30 +150,30 @@ void loop() {
 			Prediction::update();
 
 			if (lat > 10000 || lat < -10000){
-				//telemetry += String(lat, 4) + " ";
-				//telemetry += String(lng, 4) + " ";
+				telemetry += String(lat, 4) + " ";
+				telemetry += String(lng, 4) + " ";
 			} else {
-				//telemetry += String(lat, 4) + " ";
-				//telemetry += String(lng, 4) + " ";
+				telemetry += String(lat, 4) + " ";
+				telemetry += String(lng, 4) + " ";
 			}
 	    }
 
-		//telemetry += String(bmp.getKAlt(), 2) + " ";
+		telemetry += String(bmp.getKAlt(), 2) + " ";
 
-        //telemetry += String(millis()/100) + " ";
+        telemetry += String(millis()/100) + " ";
 		
-		//telemetry += String(Prediction::watPrediction.e, 2) + " ";
+		telemetry += String(Prediction::watPrediction.e, 2) + " ";
 		
-		//telemetry += String(Prediction::watPrediction.n, 2) + " ";
+		telemetry += String(Prediction::watPrediction.n, 2) + " ";
 		
-		//telemetry += String(Drop::sendBack, HEX) + " ";
+		telemetry += String(Drop::sendBack, HEX) + " ";
 		
 		telemetry += String(Prediction::bearing) + " ";
 
-		//telemetry += String(Prediction::habPrediction.e, 2) + " ";
-		//telemetry += String(Prediction::habPrediction.n, 2) + " ";
+		telemetry += String(Prediction::habPrediction.e, 2) + " ";
+		telemetry += String(Prediction::habPrediction.n, 2) + " ";
 		
-        //telemetry += "!";
+        telemetry += "!";
         SpecRFD900::sendTelemetry(telemetry);
 		Serial.println(telemetry);
 		#ifdef MEMORYCHECK
