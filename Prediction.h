@@ -149,7 +149,7 @@ namespace Prediction {
 		
 		float rho = 2.699;
 		float area_z_para = 0.2919;
-		float habDelay = 1.52;
+		float habDelay = 0.39; //old: 1.52
 		float waterDelay = 0.87;
 		
 		float dragVert;
