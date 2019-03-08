@@ -14,6 +14,7 @@ Updates fast enough
 //#define SDTELEMETRY
 //#define LOOPTRACKER
 #define HASBMP
+#define DEIMOS
 
 #include "settings.h"
 #include <Servo.h>
@@ -55,12 +56,15 @@ void setup() {
 	
 	// this gives you time to open the serial monitor
 	delay(1000);
-	
+
+  Serial.println("hello");
     SpecGPS::setup();
 	
 	Drop::setup();
 	
 	USB::setup();
+
+ Serial.println("hello 2");
 				
 	#ifdef HASBMP
 		// bmp.begin() delays for about (35 * int)ms
@@ -69,18 +73,21 @@ void setup() {
 	    }
 		bmpStartTime = millis();
 	#endif
+  Serial.println("hello 3");
     
     SpecRFD900::setup(&Serial3);
 	
     Settings::loadSettings();
-	
+
+  Serial.println("hello 4");
+  
 	Prediction::setup();
 	
-	pinMode(PA10, INPUT_PULLUP);
+	//pinMode(PA10, INPUT_PULLUP);
 	
-	if (digitalRead(PA10) == LOW) {
-		Drop::switchControl = true;
-	}
+	//if (digitalRead(PA10) == LOW) {
+		//Drop::switchControl = true;
+	//}
 
 	#ifdef SDTELEMETRY
 		SpecSD::setup("test");

@@ -34,7 +34,29 @@ namespace Drop {
 	
 	byte sendBack = 0;
 	
-	//srvo 0 
+	#ifdef DEIMOS
+	//srvo 0
+	int waterUndropped = 90;
+	int waterDropped = 50;
+	
+	//srvo 1 
+	int habsLUndropped = 50;
+	int habsLDropped = 130;
+
+	//srvo 2 
+	int habsRUndropped = 50;
+	int habsRDropped = 130;
+	
+	//srvo 3 
+	int glider1Undropped = 150;
+	int glider1Dropped = 20;
+	
+	//srvo 4 
+	int glider2Undropped = 20;
+	int glider2Dropped = 150;
+	
+	#else
+	//srvo 0
 	int waterUndropped = 90;
 	int waterDropped = 50;
 	
@@ -53,6 +75,8 @@ namespace Drop {
 	//srvo 4 
 	int glider2Undropped = 0;
 	int glider2Dropped = 130;
+	
+	#endif
 	
 	double latSum = 0.0;
 	double lngSum = 0.0;
@@ -170,24 +194,25 @@ namespace Drop {
 	}
 	
 	void update() {
-		if (switchControl) {
-			Serial.println("Switch Control");
-			if (digitalRead(PA10) == LOW) {
-				// open all
-				waterServo.write(waterDropped);
-				habLServo.write(habsLDropped);
-				habRServo.write(habsRDropped);
-				glider1Servo.write(glider1Dropped);
-				glider2Servo.write(glider2Dropped);
-			} else {
-				// close all
-				waterServo.write(waterUndropped);
-				habLServo.write(habsLUndropped);
-				habRServo.write(habsRUndropped);
-				glider1Servo.write(glider1Undropped);
-				glider2Servo.write(glider2Undropped);
-			}
-		} else if (dropArmed && !manualServo) {
+//		if (switchControl) {
+//			Serial.println("Switch Control");
+//			if (digitalRead(PA10) == LOW) {
+//				// open all
+//				waterServo.write(waterDropped);
+//				habLServo.write(habsLDropped);
+//				habRServo.write(habsRDropped);
+//				glider1Servo.write(glider1Dropped);
+//				glider2Servo.write(glider2Dropped);
+//			} else {
+//				// close all
+//				waterServo.write(waterUndropped);
+//				habLServo.write(habsLUndropped);
+//				habRServo.write(habsRUndropped);
+//				glider1Servo.write(glider1Undropped);
+//				glider2Servo.write(glider2Undropped);
+//			}
+//		} else 
+		if (dropArmed && !manualServo) {
 			if (autoDrop) {
 				dropLHabs = autoDropHabs;
 				dropRHabs = autoDropHabs;
