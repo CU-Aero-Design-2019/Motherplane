@@ -135,29 +135,30 @@ namespace Prediction {
 		return prediction;
 
 	#else
-
+		// speed of plane
 		float speed = SpecGPS::ubg.getGroundSpeed_ms();
 		
+		// current position of plane
 		float x = curENU.e;
-        float y = curENU.n;
-        float z = curENU.u;
+       		float y = curENU.n;
+        	float z = curENU.u;
 		
 		// find initial velocity from speed and bearing
-        float u = speed * sin(bearing / 180 * 3.14159265);
-        float v = speed * cos(bearing / 180 * 3.14159265);
-        float w = 0;
+        	float u = speed * sin(bearing / 180 * 3.14159265);
+        	float v = speed * cos(bearing / 180 * 3.14159265);
+        	float w = 0;
 		
-		float rho = 2.699;
-		float area_z_para = 0.2919;
-		float habDelay = 0.39; //old: 1.52
-		float waterDelay = 0.87;
+		float rho = 2.699;// air density
+		float area_z_para = 0.2919;// area of parachute (observed in the vertical direction)
+		float habDelay = 0.39; // habitat time delay
+		float waterDelay = 0.87;// water bomb bay door delay
 		
-		float dragVert;
-		float dragHorz;
-		float packageMass;
-		float area_xy;
-		float area_z;
-		float dragVert_para;
+		float dragVert;// coefficient of drag observed in the vertical direction
+		float dragHorz;// coefficient of drag observed in the horizontal direction
+		float packageMass;// mass of object ... habitat or water bottle
+		float area_xy;// cross sectional area observed from the horizontal direction
+		float area_z;// cross sectional area observed from the vertical direction
+		float dragVert_para;// coefficient of drag of the parachute
 
 		// true - habitat, false - water bottles
 		if (habitat == true) {
@@ -176,27 +177,32 @@ namespace Prediction {
 			packageMass = 0.50121957;
 		}
 		
+	// calculate initial acceleration	
 	float ax = -(dragHorz/packageMass)*0.5*rho*area_xy*u*abs(u);
         float ay = -(dragHorz/packageMass)*0.5*rho*area_xy*v*abs(v);
         float az = -9.807 + 0.5*rho*w*w*(dragVert_para * area_z_para + dragVert * area_z);
 		
         while (z > 0){
+	    // basic kinematic equations for position
             x = u*tDel + x;
             y = v*tDel + y;
             z = w*tDel + z;
-            
+		
+            // basic kinematic equations for velocity
             u = u + (ax*tDel);
             v = v + (ay*tDel);
             w = w + (az*tDel);
             
+	    // acceleration equations for x, y, and z
+	    // coefficient of drag, package mass, air density, cross sectional areas, and velocities observed in acceleration
             ax = -(dragHorz/packageMass)*0.5*rho*area_xy*u*abs(u);
 	    ay = -(dragHorz/packageMass)*0.5*rho*area_xy*v*abs(v);
 	    az = -9.807 + 0.5*rho*w*w*(dragVert_para * area_z_para + dragVert * area_z);
         }
-		
 		SpecGPS::ENU prediction;
-
+		// send out prediction
 		if (habitat) {
+			// prior to sending out prediction, incorporate time delay * velocity and add to predicted drop location
 			prediction.e = x + habDelay * u;
 			prediction.n = y + habDelay * v;
 			prediction.u = z;
