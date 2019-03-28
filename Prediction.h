@@ -176,7 +176,7 @@ namespace Prediction {
 			packageMass = 0.50121957;
 		}
 		
-		float ax = -(dragHorz/packageMass)*0.5*rho*area_xy*u*abs(u);
+	float ax = -(dragHorz/packageMass)*0.5*rho*area_xy*u*abs(u);
         float ay = -(dragHorz/packageMass)*0.5*rho*area_xy*v*abs(v);
         float az = -9.807 + 0.5*rho*w*w*(dragVert_para * area_z_para + dragVert * area_z);
 		
@@ -190,8 +190,8 @@ namespace Prediction {
             w = w + (az*tDel);
             
             ax = -(dragHorz/packageMass)*0.5*rho*area_xy*u*abs(u);
-			ay = -(dragHorz/packageMass)*0.5*rho*area_xy*v*abs(v);
-			az = -9.807 + 0.5*rho*w*w*(dragVert_para * area_z_para + dragVert * area_z);
+	    ay = -(dragHorz/packageMass)*0.5*rho*area_xy*v*abs(v);
+	    az = -9.807 + 0.5*rho*w*w*(dragVert_para * area_z_para + dragVert * area_z);
         }
 		
 		SpecGPS::ENU prediction;
